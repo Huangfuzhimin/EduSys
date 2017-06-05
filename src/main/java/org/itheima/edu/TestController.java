@@ -1,4 +1,4 @@
-package org.itheima.edu.controller;
+package org.itheima.edu;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;

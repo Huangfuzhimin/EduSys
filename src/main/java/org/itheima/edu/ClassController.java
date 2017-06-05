@@ -1,4 +1,4 @@
-package org.itheima.edu.controller;
+package org.itheima.edu;
 
 import org.itheima.edu.dao.ClassEntityDao;
 import org.itheima.edu.entity.ClassEntity;

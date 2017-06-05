@@ -30,11 +30,42 @@ public class FileUtils {
             }
         }
     }
+    public static String readFileToString(File file) {
+        if(file == null || !file.exists()){
+            return null;
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        FileInputStream fos = null;
+        try {
+            fos = new FileInputStream(file);
+            int len;
+            byte[] buffer = new byte[1024 * 8];
+            while((len = fos.read(buffer)) != -1){
+                baos.write(buffer, 0, len);
+            }
+            return baos.toString("utf-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if(fos != null){
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+
+    }
 
     public static String readFile(File file) {
         if(file == null || !file.exists()){
             return null;
         }
+        // 会以默认编码 (GBK?) 从系统文件读取数据.
         FileReader fileReader = null;
         BufferedReader br = null;
         try {

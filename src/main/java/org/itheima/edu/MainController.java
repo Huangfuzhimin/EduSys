@@ -1,4 +1,4 @@
-package org.itheima.edu.controller;
+package org.itheima.edu;
 
 import org.itheima.edu.bean.QuestionDTO;
 import org.itheima.edu.util.FileUtils;
@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
 
 /**
  * Created by Poplar on 2017/6/5.
@@ -43,6 +44,7 @@ public class MainController {
 
         List<String> fileList = new ArrayList<>();
         if (folder.exists() && folder.isDirectory()) {
+
             File[] files = folder.listFiles();
             for (File file : files) {
                 fileList.add(file.getName());
@@ -53,49 +55,59 @@ public class MainController {
     }
 
     /**
-     *
      * 获取指定章节所有题目
+     *
      * @param request
-     * @param chapter   章节名称
+     * @param chapter 章节名称
      * @return
      */
-    @RequestMapping(value = "/list", produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "/list")
     @ResponseBody
     public String list(HttpServletRequest request, String chapter) {
+//        logic-1\blueTicket\build\question.description
+//        logic-1\blueTicket\build\question.title
         List<QuestionDTO> dtos = new ArrayList<>();
         try {
             request.setCharacterEncoding("UTF-8");
             chapter = new String(chapter.getBytes("iso-8859-1"), "utf-8");
 
-            File folder = new File(sourceFolder, chapter);
-
-            System.out.println("list--> " + folder.getAbsolutePath());
-            if (folder.exists() && folder.isDirectory()) {
-                String chapterName = folder.getName();
-                File[] files = folder.listFiles();
-
-                for (File file : files) {
-                    File descFile = new File(file, "build" + File.separator + "question.description");
-                    File titleFile = new File(file, "build" + File.separator + "question.title");
-                    String title = FileUtils.readFile(titleFile);
-                    String desc = FileUtils.readFile(descFile);
-                    dtos.add(new QuestionDTO(chapterName, new String(title.getBytes("gbk"), "utf-8"), new String(desc.getBytes("gbk"), "utf-8")));
-                }
-            }
+            dtos = readChapter(chapter);
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-//        logic-1\blueTicket\build\question.description
-//        logic-1\blueTicket\build\question.title
 
-        return JsonUtils.toWrapperJson(dtos);
+        String s = JsonUtils.toWrapperJson(dtos);
+//        printEncoding(s);
+        return s;
+    }
+
+
+    public List<QuestionDTO> readChapter(String chapter) throws UnsupportedEncodingException {
+        List<QuestionDTO> dtos = new ArrayList<>();
+
+        File folder = new File(sourceFolder, chapter);
+        System.out.println("list--> " + folder.getAbsolutePath());
+        if (folder.exists() && folder.isDirectory()) {
+            String chapterName = folder.getName();
+
+            File[] files = folder.listFiles();
+            for (File file : files) {
+                File descFile = new File(file, "build" + File.separator + "question.description");
+                File titleFile = new File(file, "build" + File.separator + "question.title");
+                String title = FileUtils.readFileToString(titleFile);
+                String desc = FileUtils.readFileToString(descFile);
+                dtos.add(new QuestionDTO(chapterName, title, desc));
+
+            }
+        }
+        return dtos;
     }
 
     // 运行指定题目代码
     @RequestMapping(value = "/run")
     @ResponseBody
-    public String run(HttpServletRequest request, String chatper, String question, String content){
+    public String run(HttpServletRequest request, String chatper, String question, String content) {
 
 
 

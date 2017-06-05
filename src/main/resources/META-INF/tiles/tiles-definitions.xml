@@ -8,20 +8,21 @@
 		</definition> -->
 
 
-	<definition name="*/*" template="/WEB-INF/views/layout/default-layout.jsp">
-		<put-attribute name="nav" value="/WEB-INF/views/layout/nav.jsp" />
-		<put-attribute name="body" value="/WEB-INF/views/{1}/{2}.jsp" />
+	<!--<definition name="*/*" template="/WEB-INF/views/layout/default-layout.jsp">-->
+		<!--<put-attribute name="nav" value="/WEB-INF/views/layout/nav.jsp" />-->
+		<!--<put-attribute name="body" value="/WEB-INF/views/{1}/{2}.jsp" />-->
 
-		<put-list-attribute name="jsFiles">
-			<add-attribute value="/assets/js/net.js" />
-		</put-list-attribute>
-	</definition>
+		<!--<put-list-attribute name="jsFiles">-->
+			<!--<add-attribute value="/assets/js/net.js" />-->
+		<!--</put-list-attribute>-->
+	<!--</definition>-->
 
-	<definition name="admin/login" template="/WEB-INF/views/layout/login-layout.jsp">
-		<put-attribute name="login" value="/WEB-INF/views/admin/login.jsp" />
-	</definition>
+	<!--<definition name="admin/login" template="/WEB-INF/views/layout/login-layout.jsp">-->
+		<!--<put-attribute name="login" value="/WEB-INF/views/admin/login.jsp" />-->
+	<!--</definition>-->
 
-	<definition name="data/home" template="/assets/views/home.jsp">
+	<!--<definition name="data/home" template="/assets/views/home.jsp">-->
+	<definition name="data/home" template="/assets/index.jsp">
 		<!--<put-attribute name="login" value="/WEB-INF/views/admin/login.jsp" />-->
 	</definition>
 

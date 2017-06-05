@@ -1,4 +1,4 @@
-package org.itheima.edu.controller;
+package org.itheima.edu;
 
 import org.itheima.edu.bean.ExamBean;
 import org.itheima.edu.bean.ExamConfigBean;

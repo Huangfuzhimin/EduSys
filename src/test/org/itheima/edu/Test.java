@@ -1,10 +1,11 @@
-package org.itheima.edu.controller;
+package org.itheima.edu;
 
 import org.itheima.edu.encrypt.SaltEncoder;
 
 /**
  * Created by Poplar on 2016/12/27.
  */
+
 public class Test {
 
     static String itemHtml =

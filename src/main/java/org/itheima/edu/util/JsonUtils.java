@@ -81,7 +81,6 @@ public class JsonUtils {
 		src.setMsg("success");
 		src.setData(bean);
 		String json = gson.toJson(src);
-		System.out.println("json: " + json);
 		return json;
 	}
 

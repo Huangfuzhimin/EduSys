@@ -1,4 +1,4 @@
-package org.itheima.edu;
+package org.itheima.edu.controller;
 
 import org.itheima.edu.bean.QuestionDTO;
 import org.itheima.edu.util.FileUtils;

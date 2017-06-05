@@ -93,12 +93,13 @@ public class MainController {
     }
 
     // 运行指定题目代码
-
     @RequestMapping(value = "/run")
-    public void run(HttpServletRequest request, String chatper, String question, String content){
+    @ResponseBody
+    public String run(HttpServletRequest request, String chatper, String question, String content){
 
 
 
+        return "success";
     }
 
 }

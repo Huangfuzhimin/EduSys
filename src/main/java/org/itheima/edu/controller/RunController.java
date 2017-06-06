@@ -5,9 +5,11 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.LogStream;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.messages.*;
-import org.itheima.edu.util.FileUtils;
+import org.itheima.edu.util.JsonUtils;
+import org.itheima.edu.util.ResponseCode;
 import org.itheima.edu.util.StreamUtils;
 import org.itheima.online.magic.CompilerUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -19,6 +21,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -32,21 +35,27 @@ import java.util.concurrent.Executors;
 public class RunController {
 
 
-    //	private static final String ROOT_PATH = "/root/newstrap";
-    private static final String ROOT_PATH = "E:/cms/newstrap";
+    // 数据源目录
+    @Value("${config.dir.source}")
+    String sourceFolder;
+    //	private static final String rootPath = "/root/newstrap";
+    @Value("${config.dir.root}")
+    String rootPath;
+
     private ExecutorService threadPool;
     private DockerClient docker;
 
 
     @PostConstruct
-    public void postConstruct(){
-        System.out.println("I'm  init  method  using  @PostConstrut...." );
+    public void postConstruct() {
+        System.out.println("I'm  init  method  using  @PostConstrut....");
         try {
             init();
         } catch (ServletException e) {
             e.printStackTrace();
         }
     }
+
     public void init() throws ServletException {
         threadPool = Executors.newFixedThreadPool(20);
         try {
@@ -61,7 +70,7 @@ public class RunController {
     @RequestMapping(value = "/run")
     @ResponseBody
     public void run(HttpServletRequest request,
-                      HttpServletResponse response) {
+                    HttpServletResponse response) throws IOException {
 //                      String chatper, String question, String content) {
 
 //        try {
@@ -69,41 +78,44 @@ public class RunController {
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-        try {
-            executeRequest(request, response);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        executeRequest(request, response);
 
     }
 
     private void executeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("text/html;charset=UTF-8");
         String username = request.getParameter("username");
+        String chapter = request.getParameter("chapter");
         String questionid = request.getParameter("questionid");
         String code = request.getParameter("code");
-        File rootDir = new File(ROOT_PATH);
+
+        chapter = new String(chapter.getBytes("iso8859-1"), "utf-8");
+
+        File rootDir = new File(rootPath);
         long currentTime = System.currentTimeMillis();
-        // /root/newstrap/result/aaa/questionxxx/865757798789/src
-        // /root/newstrap/result/aaa/questionxxx/865757798789/bin
-        File srcDir = new File(rootDir, "result/" + username + "/" + questionid + "/" + currentTime + "/" + "src");
+        // /root/newstrap/result/aaa/Array-1/questionxxx/865757798789/src
+        // /root/newstrap/result/aaa/Array-1/questionxxx/865757798789/bin
+        String tempRoot = "result/" + username + "/" + chapter + "/" + questionid + "/" + currentTime + "/";
+        File srcDir = new File(rootDir, tempRoot + "src");
         srcDir.mkdirs();
-        File binDir = new File(rootDir, "result/" + username + "/" + questionid + "/" + currentTime + "/" + "bin");
+        File binDir = new File(rootDir, tempRoot + "bin");
         binDir.mkdirs();
-        // /root/newstrap/result/aaa/questionxxx/865757798789/report
-        File reportDir = new File(rootDir,
-                "result/" + username + "/" + questionid + "/" + currentTime + "/" + "report");
+        // /root/newstrap/result/aaa/Array-1/questionxxx/865757798789/report
+        File reportDir = new File(rootDir,tempRoot + "report");
         reportDir.mkdirs();
         File ItheimaJava = new File(srcDir, "Itheima.java");
         FileOutputStream fos = new FileOutputStream(ItheimaJava);
-        fos.write(code.getBytes());
-        fos.close();
-        CompilerUtils.Result result = CompilerUtils.doMagic(binDir.getAbsolutePath(), new String[] { ItheimaJava.getAbsolutePath() });
+        fos.write(code.getBytes("utf-8"));
+        StreamUtils.closeIO(fos);
+        CompilerUtils.Result result = CompilerUtils.doMagic(binDir.getAbsolutePath(), new String[]{ItheimaJava.getAbsolutePath()});
         if (result.code == 200) {
+//            E:\cms\newstrap\exam\String-2\mirrorEnds\build
+//            E:\cms\newstrap\exam\String-2\mirrorEnds\build\libs
+            String questionPath = sourceFolder + chapter + File.separator + questionid + File.separator + "build";
             String command =
-                    "java"  + " -Dfile.encoding=UTF-8"
-                            + " -Djava.ext.dirs="+ROOT_PATH+"/exam/" + questionid + "/libs"
-                            + " -cp .;"+ROOT_PATH+"/exam/" + questionid + ";" + binDir.getAbsolutePath()
+                    "java" + " -Dfile.encoding=UTF-8"
+                            + " -Djava.ext.dirs=" + questionPath + "/libs"
+                            + " -cp .;" + questionPath + ";" + binDir.getAbsolutePath()
                             + " TestMain " + reportDir.getAbsolutePath();
             System.out.println(command);
             Process p = Runtime.getRuntime().exec(command);
@@ -118,8 +130,18 @@ public class RunController {
 //			final AsyncContext ctx = request.startAsync();
 //			ctx.setTimeout(120000);
 //			threadPool.execute(new Work(ctx, srcDir, binDir, reportDir, questionid));
+//            E:\cms\newstrap\result\vvv\minCat\1496717064235\report\test.html
+//            String resultPath = reportDir + File.separator + "test.html";
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("username", username);
+            map.put("chapter", chapter);
+            map.put("questionid", questionid);
+            map.put("currentTime", currentTime);
+
+            response.getOutputStream().write(JsonUtils.toWrapperJson(map).getBytes("utf-8"));
         } else {
-            response.getOutputStream().write(result.message.getBytes("utf-8"));
+            response.getOutputStream().write(
+                    JsonUtils.toWrapperJson(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message).getBytes("utf-8"));
         }
     }
 
@@ -127,9 +149,8 @@ public class RunController {
         private AsyncContext context;
         private File srcDir;
         private File binDir;
-        private	File reportDir;
+        private File reportDir;
         private String questionid;
-
 
 
         public Work(AsyncContext context, File srcDir, File binDir, File reportDir, String questionid) {
@@ -157,7 +178,7 @@ public class RunController {
                     fis.close();
                     baos.close();
                     context.getResponse().getOutputStream().write(baos.toByteArray());
-                }else{
+                } else {
                     context.getResponse().getOutputStream().write("time out...".getBytes());
                 }
                 context.complete();
@@ -172,7 +193,7 @@ public class RunController {
 
             final HostConfig hostConfig = HostConfig.builder()
                     .appendBinds(HostConfig.Bind.from("/root/newstrap/").to("/root/newstrap/").readOnly(true).build())
-                    .appendBinds(HostConfig.Bind.from(reportDir.getAbsolutePath()).to(reportDir.getAbsolutePath()).readOnly(false)	.build())
+                    .appendBinds(HostConfig.Bind.from(reportDir.getAbsolutePath()).to(reportDir.getAbsolutePath()).readOnly(false).build())
                     .build();
             // Create container with exposed ports
             final ContainerConfig containerConfig = ContainerConfig.builder().hostConfig(hostConfig)
@@ -189,10 +210,10 @@ public class RunController {
             // Start container
             docker.startContainer(id);
             // " -cp + ":" + " TestMain " +
-            final String[] command = { "java", "-Dfile.encoding=UTF-8",
+            final String[] command = {"java", "-Dfile.encoding=UTF-8",
                     "-Djava.ext.dirs=/root/newstrap/exam/" + questionid + "/lib", "-cp",
                     ".:/root/newstrap/exam/" + questionid + ":" + binDir.getAbsolutePath(), "TestMain",
-                    reportDir.getAbsolutePath() };
+                    reportDir.getAbsolutePath()};
             final ExecCreation execCreation = docker.execCreate(id, command,
                     DockerClient.ExecCreateParam.attachStdout(), DockerClient.ExecCreateParam.attachStderr());
             final LogStream output = docker.execStart(execCreation.id());
@@ -204,7 +225,7 @@ public class RunController {
                     try {
                         //docker timer make sure docker stop after run 15seconds
                         docker.stopContainer(id, 0);
-                        docker.removeContainer(id,true);
+                        docker.removeContainer(id, true);
                     } catch (Exception e) {
 
                     }
@@ -217,7 +238,7 @@ public class RunController {
             docker.killContainer(id);
             System.out.println("killed :" + id);
             // Remove container
-            docker.removeContainer(id,true);
+            docker.removeContainer(id, true);
             // Close the docker client
             //docker.close();
         } catch (Exception e) {
@@ -225,27 +246,8 @@ public class RunController {
         }
     }
 
-    @RequestMapping(value = "/desc")
-    public void getReport(HttpServletRequest request, HttpServletResponse response) {
-        String questionid = request.getParameter("questionid");
-        response.setHeader("Access-Control-Allow-Origin", "*");
-        if (questionid != null) {
-            File rootDir = new File(ROOT_PATH + "/exam");
-            File descFile = new File(rootDir, questionid + "/question.description");
-
-            String s = FileUtils.readFileToString(descFile);
-
-            try {
-                response.getOutputStream().write(s.getBytes("utf-8"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }
-    }
-
     @PreDestroy
-    public void  preDestroy(){
+    public void preDestroy() {
         System.out.println("I'm  destory method  using  @PreDestroy.....");
     }
 

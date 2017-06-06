@@ -80,12 +80,8 @@ public class FileUtils {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            try {
-                br.close();
-                fileReader.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            StreamUtils.closeIO(br);
+            StreamUtils.closeIO(fileReader);
         }
         return null;
     }

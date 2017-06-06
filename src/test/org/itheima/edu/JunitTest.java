@@ -48,7 +48,7 @@ public class JunitTest extends AbstractJUnit4SpringContextTests {
             File titleFile = new File(folder, "build" + File.separator + "question.title");
             String title = FileUtils.readFile(titleFile);
             String desc = FileUtils.readFile(descFile);
-            dtos.add(new QuestionDTO(chapterName, title, desc));
+            dtos.add(new QuestionDTO(chapterName, folder.getName(), title, desc));
         }
         return dtos;
     }

@@ -22,8 +22,10 @@
 	<!--</definition>-->
 
 	<!--<definition name="data/home" template="/assets/views/home.jsp">-->
-	<definition name="data/home" template="/assets/index.jsp">
+	<!--<definition name="data/home" template="/assets/index.jsp">-->
 		<!--<put-attribute name="login" value="/WEB-INF/views/admin/login.jsp" />-->
-	</definition>
+	<!--</definition>-->
+	<!--<definition name="data/home" template="/assets/views/home.jsp">-->
+	<!--</definition>-->
 
 </tiles-definitions>

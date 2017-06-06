@@ -8,14 +8,16 @@ import java.io.Serializable;
 public class QuestionDTO implements Serializable{
 
     String chapter;
+    String name;
     String title;
     String desc;
 
     public QuestionDTO() {
     }
 
-    public QuestionDTO(String chapter, String title, String desc) {
+    public QuestionDTO(String chapter, String name, String title, String desc) {
         this.chapter = chapter;
+        this.name = name;
         this.title = title;
         this.desc = desc;
     }
@@ -26,6 +28,14 @@ public class QuestionDTO implements Serializable{
 
     public void setChapter(String chapter) {
         this.chapter = chapter;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getTitle() {

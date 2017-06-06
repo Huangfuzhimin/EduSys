@@ -21,6 +21,8 @@ import java.util.List;
 @Controller
 @RequestMapping(produces = "application/json;charset=UTF-8")
 public class MainController {
+
+
     // 数据源目录
     @Value("${config.dir.source}")
     String sourceFolder;
@@ -103,14 +105,5 @@ public class MainController {
         return dtos;
     }
 
-    // 运行指定题目代码
-    @RequestMapping(value = "/run")
-    @ResponseBody
-    public String run(HttpServletRequest request, String chatper, String question, String content) {
-
-
-
-        return "success";
-    }
 
 }

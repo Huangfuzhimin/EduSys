@@ -1,9 +1,5 @@
 package org.itheima.edu;
 
-import org.itheima.edu.bean.ExamBean;
-import org.itheima.edu.bean.ExamConfigBean;
-import org.itheima.edu.util.SourceReader;
-import org.itheima.edu.util.XmlUtils;
 import org.junit.Before;
 
 import java.io.File;

@@ -1,6 +1,5 @@
 package org.itheima.edu;
 
-import org.itheima.edu.bean.QuestionDTO;
 import org.itheima.edu.util.FileUtils;
 import org.itheima.edu.util.JsonUtils;
 import org.junit.Test;

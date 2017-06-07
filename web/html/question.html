@@ -8,6 +8,16 @@
 		<script src="/static/js/jquery-2.2.3.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="/static/js/jquery.params.js" type="text/javascript" charset="utf-8"></script>
 		<link rel="stylesheet" type=text/css href="/static/css/itheima.css">
+
+		<!--code editor-->
+		<script src="/static/lib/codemirror.js"></script>
+		<script src="/static/mode/javascript/javascript.js"></script>
+		<script src="/static/mode/clike/clike.js"></script>
+		<link href="/static/lib/codemirror.css" rel="stylesheet" >
+		<script src="/static/addon/edit/matchbrackets.js"></script>
+		<link href="/static/addon/hint/show-hint.css" rel="stylesheet" >
+		<script src="/static/addon/hint/show-hint.js"></script>
+
 		<style type="text/css">
 			#area_question,
 			#area_code,
@@ -194,6 +204,13 @@ public class Itheima{
 			})
 		</script>
 
+		<script type="text/javascript">
+			var javaEditor = CodeMirror.fromTextArea(document.getElementById("codeArea"), {
+				lineNumbers: true,
+				matchBrackets: true,
+				mode: "text/x-java"
+			});
+		</script>
 	</body>
 
 </html>

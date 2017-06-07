@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
 	<title>Itheima Java</title>
 	<script src="/static/js/jquery-2.2.3.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/static/js/itheima.js" type="text/javascript" charset="utf-8"></script>
 	<link rel="stylesheet" type=text/css href="/static/css/itheima.css">
 </head>
 
@@ -154,11 +155,11 @@
 //					console.log(ele.name + "_c:" + ele.current + " t:" + ele.total + " P:" + progress);
 					
 					// 添加标题
-//					var str="<a href='http://codingbat.com/java/Warmup-1'>"+
-//								"<span class=h2>"+ele.name+"</span>"+
-//							"</a> "+ele.current+"/"+ele.total+"<br>";
-					
-					var str="<a href='/html/chapter_detail.html?name="+ele.name+"'>"+
+					var type = $("nav .h2[id='selected'] a").text();
+					var param = {"name":ele.name, "type":type};
+					var arg = urlEncode(param);
+
+					var str="<a href='/html/chapter_detail.html?"+arg+"'>"+
 								"<span class=h2>"+ele.name+"</span>"+
 							"</a> "+ele.current+"/"+ele.total+"<br>";
 					// 或单独添加点击事件

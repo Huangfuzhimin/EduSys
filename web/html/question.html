@@ -7,7 +7,8 @@
 		<title>java练习</title>
 		<script src="/static/js/jquery-2.2.3.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="/static/js/jquery.params.js" type="text/javascript" charset="utf-8"></script>
-	<style type="text/css">
+		<link rel="stylesheet" type=text/css href="/static/css/itheima.css">
+		<style type="text/css">
 			#area_question,
 			#area_code,
 			#area_result {
@@ -34,8 +35,22 @@
 	<body>
 
 		<div>
+
 			<div id="header" style="background-color: #EEEEEE;">
-				<h2 style="text-align: center; padding: 10px;">Java教考系统</h2>
+				<h2 style="text-align: center; padding: 10px;">
+					黑马程序员教考系统
+				</h2>
+			</div>
+			<div>
+				<a href="/html/java.html/">
+				<span style='font-size:200%;'>
+				Itheima
+				</span>
+				</a>
+
+				> <a href="/html/java.html/">章节列表</a>
+				> <span ><a id="current_chapter" href="#" onclick="javascript:history.back(-1)">Array-2</a></span>
+				> <span id="current_question">666</span>
 			</div>
 
 			<div id="area_question" style="width: 33%;">
@@ -167,9 +182,13 @@ public class Itheima{
 				
 				chapter = $.query.get("chapter");
 				name = $.query.get("name");
-				
+				var title = $.query.get("title");
+
 				if(!chapter) chapter = "Array-1";
 				if(!name) name = "firstLast6";
+
+				$("#current_chapter").text(chapter);
+				$("#current_question").text(title + "("+name+")");
 //				console.log(chapter+"_"+name);
 				initQuestion();
 			})

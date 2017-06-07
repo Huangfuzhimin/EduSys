@@ -22,14 +22,16 @@
 			黑马程序员教考系统 
 		</h2>
 		</div>
-		<a href="/html/java.html/">
-			<span style='font-size:200%;'>
-		Itheima
-		</span>
-		</a>
+		<div>
+			<a href="/html/java.html/">
+				<span style='font-size:200%;'>
+				Itheima
+				</span>
+			</a>
 
-		> <a href="#" onclick="javascript:history.back(-1)">章节列表</a>
-		> <span id="current_chapter">Array-2</span>
+			> <a href="#" onclick="javascript:history.back(-1)">章节列表</a>
+			> <span id="current_chapter">Array-2</span>
+		</div>
 
 		<div class=tabc style="margin-top: 20px;">
 			<nav>
@@ -128,14 +130,27 @@
 				}, onSuccess);
 			}
 
+
+			function selectType (type) {
+				var tags =  $("nav li.h2 a");
+//			tags.css("background-color", "yellow");
+				var arr = tags.toArray();
+				for (var i = 0; i < arr.length; i++) {
+					var li = $(arr[i]);
+					li.parent().attr("id", (li.text() == type) ? "selected" : "");
+				}
+			}
+
 			var chapterName = "";
 			$(function() {
 				chapterName = $.query.get("name");
+				var type = $.query.get("type");
 				if(!chapterName) chapterName = "Array-1";
 
 				$("#current_chapter").html(chapterName);
 
-				//	            console.log("name: " + name);
+				selectType(type);
+
 				initChapterByName(chapterName);
 			})
 		</script>

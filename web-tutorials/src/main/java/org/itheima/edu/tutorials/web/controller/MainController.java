@@ -83,8 +83,8 @@ public class MainController {
     @RequestMapping(value = "/chapter")
     @ResponseBody
     public String list(HttpServletRequest request, String chapter) {
-//        logic-1\blueTicket\build\question.description
-//        logic-1\blueTicket\build\question.title
+//        logic-1\blueTicket\question.description
+//        logic-1\blueTicket\question.title
         List<QuestionDTO> dtos = new ArrayList<QuestionDTO>();
         try {
             request.setCharacterEncoding("UTF-8");
@@ -114,8 +114,8 @@ public class MainController {
 
             File[] files = folder.listFiles();
             for (File file : files) {
-                File descFile = new File(file, "build" + File.separator + "question.description");
-                File titleFile = new File(file, "build" + File.separator + "question.title");
+                File descFile = new File(file, "question.description");
+                File titleFile = new File(file,  "question.title");
                 String title = FileUtils.readFileToString(titleFile);
                 String desc = FileUtils.readFileToString(descFile);
                 dtos.add(new QuestionDTO(chapterName, file.getName(), title, desc));
@@ -140,7 +140,7 @@ public class MainController {
         try {
             if (questionid != null) {
                 File rootDir = new File(sourceFolder);
-                File descFile = new File(rootDir, chapter + File.separator + questionid + "/build/question.description");
+                File descFile = new File(rootDir, chapter + File.separator + questionid + "/question.description");
 
                 System.out.println(descFile.getAbsolutePath());
                 String s = FileUtils.readFileToString(descFile);

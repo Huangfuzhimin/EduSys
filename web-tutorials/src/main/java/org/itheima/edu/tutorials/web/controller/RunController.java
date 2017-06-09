@@ -109,9 +109,9 @@ public class RunController {
         StreamUtils.closeIO(fos);
         JCompilerUtils.Result result = JCompilerUtils.doMagic(binDir.getAbsolutePath(), new String[]{ItheimaJava.getAbsolutePath()});
         if (result.code == 200) {
-//            E:\cms\newstrap\exam\String-2\mirrorEnds\build
-//            E:\cms\newstrap\exam\String-2\mirrorEnds\build\libs
-            String questionPath = sourceFolder + chapter + File.separator + questionid + File.separator + "build";
+//            E:\cms\newstrap\exam\String-2\mirrorEnds\
+//            E:\cms\newstrap\exam\String-2\mirrorEnds\libs
+            String questionPath = sourceFolder + chapter + File.separator + questionid ;
             String command =
                     "java" + " -Dfile.encoding=UTF-8"
                             + " -Djava.ext.dirs=" + questionPath + "/libs"

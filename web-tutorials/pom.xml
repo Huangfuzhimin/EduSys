@@ -3,7 +3,7 @@
     <parent>
         <artifactId>parent</artifactId>
         <groupId>org.itheima.edu</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${project.build.version}</version>
         <relativePath>../parent/pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -90,6 +90,18 @@
             <groupId>com.spotify</groupId>
             <artifactId>docker-client</artifactId>
             <version>8.7.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.itheima.edu</groupId>
+            <artifactId>java-compiler</artifactId>
+            <version>${project.build.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.itheima.edu</groupId>
+            <artifactId>kotlin-compiler</artifactId>
+            <version>${project.build.version}</version>
         </dependency>
 
     </dependencies>

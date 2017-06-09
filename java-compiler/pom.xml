@@ -3,7 +3,7 @@
     <parent>
         <artifactId>parent</artifactId>
         <groupId>org.itheima.edu</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${project.build.version}</version>
         <relativePath>../parent/pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>

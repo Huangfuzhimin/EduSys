@@ -4,7 +4,7 @@
 
     <groupId>org.itheima.edu</groupId>
     <artifactId>parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>${project.build.version}</version>
     <modules>
         <module>../web-tutorials</module>
         <module>../java-compiler</module>
@@ -20,6 +20,7 @@
     </distributionManagement>
 
     <properties>
+        <project.build.version>1.0-SNAPSHOT</project.build.version>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <slf4j.version>1.7.25</slf4j.version>

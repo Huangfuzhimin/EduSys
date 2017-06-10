@@ -146,7 +146,7 @@ public class Itheima{
 					// 从本地localStorage读取
 					// 如果没有, 创建并存储
 					var username = "aaa";
-					var code = $("#codeArea").val();
+					var code = javaEditor.getValue();
 					var questionid = name;
 
 					var arg = {
@@ -208,6 +208,9 @@ public class Itheima{
 			var javaEditor = CodeMirror.fromTextArea(document.getElementById("codeArea"), {
 				lineNumbers: true,
 				matchBrackets: true,
+                indentWithTabs: true,
+                smartIndent: true,
+                autofocus: true,
 				mode: "text/x-java"
 			});
 		</script>

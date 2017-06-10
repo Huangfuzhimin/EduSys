@@ -121,7 +121,7 @@ public class RunController {
             Process p = Runtime.getRuntime().exec(command);
             try {
                 String parseCmdStream = StreamUtils.parseCmdStream(p.getInputStream());
-                System.out.println(parseCmdStream);
+//                System.out.println(parseCmdStream);
                 p.waitFor();
             } catch (InterruptedException e) {
                 e.printStackTrace();

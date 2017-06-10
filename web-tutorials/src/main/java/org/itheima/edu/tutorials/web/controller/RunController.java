@@ -111,7 +111,7 @@ public class RunController {
         if (result.code == 200) {
 //            E:\cms\newstrap\exam\String-2\mirrorEnds\
 //            E:\cms\newstrap\exam\String-2\mirrorEnds\libs
-            String questionPath = sourceFolder + chapter + File.separator + questionid ;
+            String questionPath = sourceFolder + File.separator + chapter + File.separator + questionid ;
             String command =
                     "java" + " -Dfile.encoding=UTF-8"
                             + " -Djava.ext.dirs=" + questionPath + "/libs"

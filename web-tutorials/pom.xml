@@ -18,6 +18,7 @@
         <hibernate.version>5.0.12.Final</hibernate.version>
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <gson.version>2.7</gson.version>
+        <tiles.version>3.0.7</tiles.version>
     </properties>
 
     <dependencies>
@@ -27,6 +28,11 @@
             <artifactId>javax.servlet-api</artifactId>
             <version>${javax.servlet.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet.jsp.jstl</groupId>
+            <artifactId>jstl-api</artifactId>
+            <version>1.2</version>
         </dependency>
 
         <!-- spring IoC环境-->
@@ -71,13 +77,6 @@
             <version>${spring.version}</version>
         </dependency>
 
-        <!-- Hibernate环境 -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>${hibernate.version}</version>
-        </dependency>
-
         <!-- Gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -92,6 +91,7 @@
             <version>8.7.1</version>
         </dependency>
 
+        <!-- module依赖 -->
         <dependency>
             <groupId>org.itheima.edu</groupId>
             <artifactId>java-compiler</artifactId>
@@ -103,6 +103,14 @@
             <artifactId>kotlin-compiler</artifactId>
             <version>${project.build.version}</version>
         </dependency>
+
+        <!-- tiles -->
+        <dependency>
+            <groupId>org.apache.tiles</groupId>
+            <artifactId>tiles-jsp</artifactId>
+            <version>${tiles.version}</version>
+        </dependency>
+
 
     </dependencies>
 

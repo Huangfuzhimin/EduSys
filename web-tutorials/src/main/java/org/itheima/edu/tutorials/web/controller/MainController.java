@@ -115,7 +115,7 @@ public class MainController {
             File[] files = folder.listFiles();
             for (File file : files) {
                 File descFile = new File(file, "question.description");
-                File titleFile = new File(file,  "question.title");
+                File titleFile = new File(file, "question.title");
                 String title = FileUtils.readFileToString(titleFile);
                 String desc = FileUtils.readFileToString(descFile);
                 dtos.add(new QuestionDTO(chapterName, file.getName(), title, desc));
@@ -159,6 +159,11 @@ public class MainController {
         }
     }
 
+    @RequestMapping("/chapter/list")
+    public String getChapterList(String name, String type) {
+
+        return "chapter/list";
+    }
 
 
 }

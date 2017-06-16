@@ -1,34 +1,15 @@
 package org.itheima.edu.tutorials.web.controller;
 
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.LogStream;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
-import com.spotify.docker.client.messages.*;
-import org.itheima.edu.jcompiler.JCompilerUtils;
-import org.itheima.edu.tutorials.utils.JsonUtils;
-import org.itheima.edu.tutorials.utils.StreamUtils;
-import org.itheima.edu.tutorials.web.ResponseCode;
 import org.itheima.edu.tutorials.web.ResponseUtils;
 import org.itheima.edu.tutorials.web.service.RunService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-import javax.servlet.AsyncContext;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by Poplar on 2017/6/6.
@@ -37,7 +18,8 @@ import java.util.concurrent.Executors;
 @RequestMapping(produces = "application/json;charset=UTF-8")
 public class RunController {
 
-    @Resource(name = "runServiceLocalImpl")
+    @Resource(name = "runServiceLocalImpl")   // 本地直接编译
+//    @Resource(name = "runServiceDockerImpl")    // docker编译
     RunService runService;
 
     // 运行指定题目代码
@@ -65,11 +47,8 @@ public class RunController {
         String chapter = request.getParameter("chapter");
         String questionid = request.getParameter("questionid");
         String code = request.getParameter("code");
-        chapter = new String(chapter.getBytes("iso8859-1"), "utf-8");
 
         return runService.run(request, username, chapter, questionid, code);
     }
-
-
 
 }

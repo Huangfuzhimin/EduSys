@@ -59,34 +59,24 @@ public class MainController {
     @RequestMapping(value = "/chapter")
     @ResponseBody
     public String list(HttpServletRequest request, String chapter) {
-
-        try {
-            request.setCharacterEncoding("UTF-8");
-            chapter = new String(chapter.getBytes("iso-8859-1"), "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-
         List<QuestionDTO> dtos = mainService.getQuestionsByChapter(chapter);
 
         return JsonUtils.toWrapperJson(dtos);
     }
 
 
-
+    /**
+     * 获取问题的描述
+     * @param request
+     * @param response
+     */
     @RequestMapping(value = "/desc")
     public void getQuestionDesc(HttpServletRequest request, HttpServletResponse response) {
 //        LogUtils.printRequest(request);
         String chapter = request.getParameter("chapter");
         String questionid = request.getParameter("questionid");
-        try {
-            chapter = new String(chapter.getBytes("iso-8859-1"), "utf-8");
-            questionid = new String(questionid.getBytes("iso-8859-1"), "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        String result = mainService.getQuestionDesc(chapter, questionid);
 
+        String result = mainService.getQuestionDesc(chapter, questionid);
         try {
             response.getOutputStream().write(result.getBytes("utf-8"));
         } catch (IOException e) {

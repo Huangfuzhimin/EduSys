@@ -29,8 +29,10 @@ import java.util.concurrent.Executors;
  * Created by Poplar on 2017/6/16.
  */
 @Service
-public class RunServiceRemoteImpl implements RunService{
+public class RunServiceDockerImpl implements RunService{
 
+    public static final String URI_DOCKER = "http://192.168.1.131:2735";
+//    public static final String URI_DOCKER = "http://localhost:2735";
     // 数据源目录
     @Value("${config.dir.source}")
     String sourceFolder;
@@ -56,7 +58,7 @@ public class RunServiceRemoteImpl implements RunService{
     public void init() throws ServletException {
         threadPool = Executors.newFixedThreadPool(20);
         try {
-            docker = DefaultDockerClient.fromEnv().uri("http://localhost:2735").build();
+            docker = DefaultDockerClient.fromEnv().uri(URI_DOCKER).build();
         } catch (DockerCertificateException e) {
             e.printStackTrace();
         }
@@ -169,7 +171,7 @@ public class RunServiceRemoteImpl implements RunService{
         try {
 
             final HostConfig hostConfig = HostConfig.builder()
-                    .appendBinds(HostConfig.Bind.from("/root/newstrap/").to("/root/newstrap/").readOnly(true).build())
+                    .appendBinds(HostConfig.Bind.from(rootPath).to(rootPath).readOnly(true).build())
                     .appendBinds(HostConfig.Bind.from(reportDir.getAbsolutePath()).to(reportDir.getAbsolutePath()).readOnly(false).build())
                     .build();
             // Create container with exposed ports
@@ -187,10 +189,11 @@ public class RunServiceRemoteImpl implements RunService{
             // Start container
             docker.startContainer(id);
             // " -cp + ":" + " TestMain " +
-            final String[] command = {"java", "-Dfile.encoding=UTF-8",
-                    "-Djava.ext.dirs=/root/newstrap/exam/" + questionid + "/lib", "-cp",
-                    ".:/root/newstrap/exam/" + questionid + ":" + binDir.getAbsolutePath(), "TestMain",
-                    reportDir.getAbsolutePath()};
+            final String[] command = {
+                    "java", "-Dfile.encoding=UTF-8",
+                    "-Djava.ext.dirs="+rootPath+"/exam/" + questionid + "/lib",
+                    "-cp",".:"+rootPath+"/exam/" + questionid + ":" + binDir.getAbsolutePath(),
+                    "TestMain", reportDir.getAbsolutePath()};
             final ExecCreation execCreation = docker.execCreate(id, command,
                     DockerClient.ExecCreateParam.attachStdout(), DockerClient.ExecCreateParam.attachStderr());
             final LogStream output = docker.execStart(execCreation.id());

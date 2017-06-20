@@ -90,7 +90,7 @@
 
 <script type="text/javascript">
     var structure = null;
-    var redisURL = "http://120.76.238.32:7379/";
+    var redisURL = "http://172.16.1.1:7379/";
 
     function loadTree() {
         var url = "${pageContext.request.contextPath}/question/tree";

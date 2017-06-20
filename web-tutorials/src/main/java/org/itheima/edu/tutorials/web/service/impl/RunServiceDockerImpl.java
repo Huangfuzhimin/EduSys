@@ -67,6 +67,11 @@ public class RunServiceDockerImpl implements RunService{
         }
     }
 
+    @PreDestroy
+    public void preDestroy() {
+        System.out.println("I'm  destory method  using  @PreDestroy.....");
+    }
+
     public boolean runDocker(String[] command, String reportPath) {
         String id = null;
         try {
@@ -136,11 +141,6 @@ public class RunServiceDockerImpl implements RunService{
                 }
             }
         }, 15 * 1000);
-    }
-
-    @PreDestroy
-    public void preDestroy() {
-        System.out.println("I'm  destory method  using  @PreDestroy.....");
     }
 
 

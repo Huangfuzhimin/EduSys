@@ -6,6 +6,7 @@ import org.itheima.edu.tutorials.utils.FileUtils;
 import org.itheima.edu.tutorials.utils.PathUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -20,6 +21,9 @@ import java.util.Random;
  */
 @Service
 public class MainService {
+
+    @Value("${config.dir.source}")
+    String sourceFolder;
 
     /**
      * 根据类型获取所有章节

@@ -16,7 +16,9 @@
           href="${pageContext.request.contextPath}/static/plugin/easyui/themes/material/easyui.css">
     <link rel="stylesheet" type="text/css"
           href="${pageContext.request.contextPath}/static/plugin/easyui/themes/icon.css">
+
     <script type="text/javascript" src="${pageContext.request.contextPath}/static/plugin/jquery/jquery.min.js"></script>
+    <script src="${pageContext.request.contextPath}/static/plugin/jquery/jquery.params.js"></script>
     <script type="text/javascript"
             src="${pageContext.request.contextPath}/static/plugin/easyui/jquery.easyui.min.js"></script>
 
@@ -50,10 +52,10 @@
 </nav>
 
 <div id="layout" class="easyui-layout" data-options="fit:true" style="padding-bottom: 60px">
-    <%--<div data-options="region:'south',split:true" title="控制台" style="height:40%;"></div>--%>
-    <div data-options="region:'west',split:true" style="width:40%">
+    <div data-options="region:'west',split:true" style="width:35%">
         <div class="easyui-accordion" data-options="fit:true">
             <div title="题目描述" data-options="iconCls:'icon-j-info'">
+                <div id="projectDesc" style="padding: 8px;"></div>
             </div>
             <div title="控制台" data-options="iconCls:'icon-j-console'">
             </div>
@@ -68,7 +70,7 @@
     <div data-options="region:'center'">
 
         <div id="code" class="easyui-panel" title="编码区"
-             data-options="fit:true,iconCls:'icon-j-code',onResize:function(){resize();},tools:[{iconCls:'icon-j-run',handler:function(){clickRun()}}]">
+             data-options="fit:true,iconCls:'icon-j-code',tools:[{iconCls:'icon-j-run',handler:function(){clickRun()}}]">
             <!-- 代码tab区 -->
             <div id="tabs" class="easyui-tabs" data-options="fit:true"></div>
         </div>
@@ -77,55 +79,7 @@
 </div>
 
 <script type="text/javascript">
-    function clickRun() {
-        alert('run');
-    }
-
-    function clickReset() {
-        alert('reset');
-    }
-
-    var data = [{
-        text: '项目名称',
-        iconCls:'icon-j-folder',
-        state: 'open',
-        children: [{
-            text: 'src',
-            iconCls: 'icon-j-src',
-            children: [
-                {
-                    text: 'Itheima.java',
-                    iconCls: 'icon-j-file',
-                    attributes: {
-                        type: 1,
-                        readOnly: false
-                    }
-                }, {
-                    text: 'Test.java',
-                    iconCls: 'icon-j-file',
-                    attributes: {
-                        type: 1,
-                        readOnly: false
-                    }
-                }
-            ]
-        }, {
-            text: 'jre1.8环境',
-            iconCls: 'icon-j-lib'
-        }, {
-            text: 'libs依赖',
-            iconCls: 'icon-j-lib',
-            state: 'closed',
-            children: [
-                {
-                    text: 'Gson-2.4.jar',
-                    iconCls: 'icon-j-jar'
-                }
-            ]
-        }]
-    }];
-
-    var structure = new ProjectStructure("tree", data, "tabs");
+    var structure = null;
 
     function loadTree() {
         var url = "${pageContext.request.contextPath}/question/tree";
@@ -133,8 +87,58 @@
             "chapter": $.query.get("chapter"),
             "questionid": $.query.get("name")
         };
+        var callback = function (result) {
+            structure = new ProjectStructure("tree", result, "tabs");
+        };
+        $.post(url, data, callback, 'json');
     }
 
+    function loadDesc() {
+        var url = "${pageContext.request.contextPath}/question/desc";
+        var data = {
+            "chapter": $.query.get("chapter"),
+            "questionid": $.query.get("name")
+        };
+        var callback = function (result) {
+            $("#projectDesc").html(result);
+        };
+
+        $.post(url, data, callback);
+    }
+
+    function clickRun() {
+        if (structure == null) {
+            return;
+        }
+
+        var codes = structure.getCodes();
+        var code = codes[0].content;//临时使用
+
+        var username = "aaa";
+
+        var data = {
+            "chapter": $.query.get("chapter"),
+            "username": username,
+            "questionid": $.query.get("name"),
+            "code": code
+        };
+        console.log(data);
+        var url = "${pageContext.request.contextPath}/run";
+        var callback = function (result) {
+            console.log(result);
+        }
+        $.post("/run", data, callback,"json");
+    }
+
+    function clickReset() {
+        alert('reset');
+    }
+
+
+    $(function () {
+        loadTree();
+        loadDesc();
+    })
 </script>
 
 

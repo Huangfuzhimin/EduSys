@@ -7,6 +7,7 @@
 		<title>java练习</title>
 		<script src="/static/js/jquery-2.2.3.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="/static/js/jquery.params.js" type="text/javascript" charset="utf-8"></script>
+		<script src="/static/js/itheima.js" type="text/javascript" charset="utf-8"></script>
 		<link rel="stylesheet" type=text/css href="/static/css/itheima.css">
 
 		<!--code editor-->
@@ -132,27 +133,89 @@ public class Itheima{
             var redisURL = "http://120.76.238.32:7379/";
             var tryCount = 0;
             // 处理异步请求结果
-            function handleAsyncResult(result) {
-                var code = result.code;
-                var key = result.data;
+            function intervalGet(key) {
+                tryCount = 0;
 
-                if(code == 0){
-                    tryCount = 0;
+                timerId = setInterval(function () {
+                    tryCount++;
+                    if (tryCount >= 20) {
+                        clearInterval(timerId);//停止定时器
+                        return;
+                    }
 
-					timerId = setInterval(function () {
-                        tryCount ++;
-                        if(tryCount > 20){
-                            clearInterval(timerId);//停止定时器
-                        }
-
-                        getStatus(key);
-                    }, 1000);
                     getStatus(key);
+                }, 200);
+                getStatus(key);
+            }
+            /**
+			 * 订阅 频道
+             * @param channelKey
+             */
+            function subscribeChannel(channelKey) {
+                function checkData() {
+                    if(xhr.readyState === 3)  {
+                        console.log("xhr.return " + channelKey);
+                        var response = xhr.responseText;
+                        var chunk = response.slice(previous_response_length);
+                        previous_response_length = response.length;
+                        console.log("chunk: " + chunk);
+                        var sub = $.parseJSON(chunk);
+                        var sub_arr = sub.SUBSCRIBE;
+//
+//                        console.log("__type11: " + typeof chunk) 	// string
+//                        console.log("__type22: " + typeof sub)	// obj
+//                        console.log("__type33: " + typeof sub_arr)// obj
+//                        console.log("__type44: " + typeof sub_arr[2])// number / string
 
-				}
+//                        {
+//                            "SUBSCRIBE": [
+//								"message",
+//								"ddd11d005b656163faa51f45c43a6d6c83d7fded",
+//								"{"code":0,"data":"E:\\cms\\newstrap\\result\\aaa\\logic-1\\old35\\1497929476955\\report"}"
+//                        	]
+//                        }
+//                        console.log(message)
+//                        $("#submit-result").html(message);
+                        var bean = sub_arr[2];
+                        if(sub_arr[1] === channelKey && (typeof bean) === "string"){
+                            bean = $.parseJSON(bean);
+                            if(bean.code === 0){
+                            	loadReport(bean.data);
+							}else {
+								var show = "错误码: " + bean.code +"<br/>";
+								show+= "错误信息: <br/>" + bean.data;
 
+                                $("#submit-result").html(show);
+							}
+
+						}
+                    }
+                }
+
+                var previous_response_length = 0;
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", redisURL + "SUBSCRIBE/" + channelKey, true);
+                xhr.onreadystatechange = checkData;
+                xhr.send(null);
+//                console.log("xhr.send: " + key);
+            }
+            function handleAsyncResult(result) {
+                var key = result.data;
+                // 不用处理了, 直接等着订阅者收消息就行了
+//                    intervalGet(key);
+//				subscribeGet(key);
             }
 
+
+            function loadReport(data) {
+                $("#submit-result").load(
+                    "/report1",
+                    {"path": data},
+                    function (res) {
+//                                console.log(data);
+                    }
+                );
+            }
             function getStatus(key){
                 $.get(redisURL + "GET/" + key, function (res) {
                     console.log(key + " - " + res);
@@ -164,14 +227,9 @@ public class Itheima{
 
                         clearInterval(timerId);//停止定时器
 
+						var data = bean.data;
 //                        $("#submit-result").html(html);
-                        $("#submit-result").load(
-                            "/report1",
-							{"path":bean.data},
-                            function(data) {
-//                                console.log(data);
-                            }
-                        );
+                        loadReport(data);
 					}
                 })
             }
@@ -179,12 +237,12 @@ public class Itheima{
             function submitSuccess(res) {
 				var result = jQuery.parseJSON(res);
 				if(result.code === 0) {
-					console.log("success");
+					console.log("请求成功 success" + res);
 					// 提交代码成功
 //					handleSyncResult(result);
 					handleAsyncResult(result);
 				} else {
-					console.log(result.code);
+                    console.log("error : code " + result.code );
 					console.log(result.data);
 					$("#submit-result").html(result.data);
 				}
@@ -199,9 +257,7 @@ public class Itheima{
 
 					// 从本地localStorage读取
 					// 如果没有, 创建并存储
-					var username = "aaa";
 					var code = javaEditor.getValue();
-					var questionid = name;
 
 					var arg = {
 						"chapter": chapter,
@@ -210,6 +266,8 @@ public class Itheima{
 						"questionid": questionid
 					};
 //					console.log(JSON.stringify(arg))
+
+					$("#submit-result").html("");
 					
 					if(!username || !code || !questionid) {
 						alert("请确认代码和题目已获取")
@@ -217,20 +275,17 @@ public class Itheima{
 					}
 
 					//				
-					$.post(
-						"/run",
-						arg,
-						submitSuccess
-					)
+					$.post("/run", arg, submitSuccess)
 				});
 			}
 			
 			function initQuestion () {
-				
+
+                // 获取题目描述
 				$.get("/desc",
 					{
 						"chapter": chapter,
-						"questionid": name
+						"questionid": questionid
 					}, 
 					function(result) {
 						$("#questiondesc").html(result);
@@ -238,23 +293,29 @@ public class Itheima{
 				);
 			}
 
+            var username = "aaa";
 			var chapter = "";
-			var name = "";
+			var questionid = "";
 			$(document).ready(function() {
 
 				bindEvent();
 				
 				chapter = $.query.get("chapter");
-				name = $.query.get("name");
+				questionid = $.query.get("questionid");
 				var title = $.query.get("title");
 
 				if(!chapter) chapter = "Array-1";
-				if(!name) name = "firstLast6";
+				if(!questionid) questionid = "firstLast6";
 
 				$("#current_chapter").text(chapter);
-				$("#current_question").text(title + "("+name+")");
-//				console.log(chapter+"_"+name);
+				$("#current_question").text(title + "("+questionid+")");
+//				console.log(chapter+"_"+questionid);
 				initQuestion();
+
+				// 订阅指定用户的指定题目
+				var channelKey = "{0}_{1}_{2}".format(username, chapter, questionid);
+				subscribeChannel(channelKey);
+
 			})
 		</script>
 

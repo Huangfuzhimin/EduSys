@@ -15,5 +15,5 @@ public interface RunService {
     String asyncRun(String username, String chapter, String questionid, String code) throws IOException;
 
     @Async
-    void async(String username, String chapter, String questionid, String code, long currentTime);
+    void async(String username, String chapter, String questionid, String code, long currentTime) throws IOException;
 }

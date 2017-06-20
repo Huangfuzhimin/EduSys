@@ -51,7 +51,8 @@ public class RunServiceLocalImpl implements RunService {
         File binDir = runDir.getChildDir("bin");
         File reportDir = runDir.getChildDir("report");
         File questionDir = PathUtil.questionDir(chapter, questionid);
-        String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);
+//        String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);
+        String cacheKey = String.format("%s_%s_%s", username, chapter, questionid);
         logger.info("cacheKey: " + cacheKey + " reportDir: " + reportDir.getAbsolutePath());
 
         // 1. 写出src到文件
@@ -88,10 +89,12 @@ public class RunServiceLocalImpl implements RunService {
             responseStr = JsonUtils.toWrapperJson(map);
 
             redisUtil.setCacheObject(cacheKey, ResponseUtils.success(0, reportDir.getAbsolutePath()));
+            redisUtil.publish(cacheKey, ResponseUtils.success(0, reportDir.getAbsolutePath()));
         } else {
             responseStr = JsonUtils.toWrapperJson(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message);
 
-            redisUtil.setCacheObject(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD));
+            redisUtil.setCacheObject(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message));
+            redisUtil.publish(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message));
         }
         System.out.println("写出完毕->" + cacheKey);
 
@@ -140,11 +143,7 @@ public class RunServiceLocalImpl implements RunService {
 //    }
 
     @Override
-    public void async(String username, String chapter, String questionid, String code, long currentTime) {
-        try {
-            run(username, chapter, questionid, code, currentTime);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void async(String username, String chapter, String questionid, String code, long currentTime) throws IOException {
+        run(username, chapter, questionid, code, currentTime);
     }
 }

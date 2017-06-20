@@ -36,11 +36,30 @@ public class RunController {
     public void run(HttpServletRequest req,
                     HttpServletResponse resp) {
         try {
-            String resStr = executeRequest(req, resp);
-            ResponseUtils.outputJson(resp, resStr);
+//            String resStr = executeRequest(req, resp);
+            resp.setContentType("text/html;charset=UTF-8");
+            String username = req.getParameter("username");
+            String chapter = req.getParameter("chapter");
+            String questionid = req.getParameter("questionid");
+            String code = req.getParameter("code");
+
+//        return runService.asyncRun(username, chapter, questionid, code);
+
+            // 生成时间
+            long currentTime = System.currentTimeMillis();
+            // 返回缓存key (SHA1数字摘要)
+//            String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);
+            String cacheKey = username + "_" + chapter + "_" + questionid;
+            System.out.println("asyncRun -> cacheKey: " + cacheKey);
+            ResponseUtils.outputJson(resp, ResponseUtils.success(cacheKey));
+
+            // 异步执行
+            runService.async(username, chapter, questionid, code, currentTime);
+
         } catch (IOException e) {
-            e.printStackTrace();
             ResponseUtils.error(100, "运行错误", resp);
+
+            e.printStackTrace();
         }
 
     }

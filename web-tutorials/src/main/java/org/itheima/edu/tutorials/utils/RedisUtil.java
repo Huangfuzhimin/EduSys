@@ -27,7 +27,7 @@ public class RedisUtil
 
     @Autowired
     @Qualifier("redisTemplate")
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     @Qualifier("redisTemplate")
@@ -374,6 +374,10 @@ public class RedisUtil
                 return 1L;
             }
         });
+    }
+
+    public void publish(String channel, String message){
+        redisTemplate.convertAndSend(channel, message);
     }
 
 }

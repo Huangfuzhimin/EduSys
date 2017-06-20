@@ -24,17 +24,17 @@
           p:host-name="${redis.host}"
           p:port="${redis.port}"
           p:password="${redis.pass}"
-          p:usePool="false"
+          p:usePool="true"
           p:pool-config-ref="poolConfig"/>
 
     <bean id="stringRedisSerializer"  class="org.springframework.data.redis.serializer.StringRedisSerializer" />
 
-    <bean id="redisTemplate" class="org.springframework.data.redis.core.StringRedisTemplate">
+    <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
         <property name="connectionFactory"   ref="connectionFactory" />
         <property name="keySerializer" ref="stringRedisSerializer"/>
         <property name="hashKeySerializer" ref="stringRedisSerializer" />
 
-        <property name="valueSerializer" ref="stringRedisSerializer"></property>
+        <property name="valueSerializer" ref="stringRedisSerializer"/>
 
         <!--<property name="valueSerializer">-->
             <!--<bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />-->

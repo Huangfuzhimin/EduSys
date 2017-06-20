@@ -234,7 +234,7 @@ public class RunServiceDockerImpl implements RunService{
     }
 
     @Override
-    public void async(String username, String chapter, String questionid, String code, long currentTime) {
+    public void async(String username, String chapter, String questionid, String code, long currentTime) throws IOException {
 
     }
 

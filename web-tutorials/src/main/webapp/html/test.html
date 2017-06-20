@@ -72,6 +72,21 @@
             })
         }
 
+        var previous_response_length = 0
+        xhr = new XMLHttpRequest()
+        xhr.open("GET", "http://120.76.238.32:7379/SUBSCRIBE/hello", true);
+        xhr.onreadystatechange = checkData;
+        xhr.send(null);
+
+        function checkData() {
+            if(xhr.readyState == 3)  {
+                response = xhr.responseText;
+                chunk = response.slice(previous_response_length);
+                previous_response_length = response.length;
+                console.log(chunk);
+            }
+        };
+
 //        $(document).ready(function () {
 //
 //

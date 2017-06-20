@@ -14,6 +14,7 @@
     <!-- jquery -->
     <script src="${pageContext.request.contextPath}/static/plugin/jquery/jquery.min.js"></script>
 
+    <script type="text/javascript" src="${pageContext.request.contextPath}/static/js/itheima.js"></script>
 
     <script type="text/javascript" src="${pageContext.request.contextPath}/static/js/component-card.js"></script>
 
@@ -98,12 +99,16 @@
                     var item = datas[i];
                     var progress = Math.floor(item.current * 100 / item.total);
 
+                    var param = {"name": item.name, "type": language};
+                    var arg = urlEncode(param);
+                    var url = '${pageContext.request.contextPath}/chapter/list?' + arg;
                     list[i] = {
                         title: item.name,
                         content: 'content',
                         progressDesc: '已完成' + progress + '%',
                         progress: progress,
-                        rating: 7
+                        rating: 7,
+                        url: url
                     };
                 }
 

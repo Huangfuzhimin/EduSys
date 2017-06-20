@@ -6,6 +6,7 @@ import org.itheima.edu.tutorials.utils.FileUtils;
 import org.itheima.edu.tutorials.utils.JsonUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -125,8 +126,7 @@ public class MainController {
         return dtos;
     }
 
-
-    @RequestMapping(value = "/desc")
+    @RequestMapping(value = "/question/desc")
     public void getDesc(HttpServletRequest request, HttpServletResponse response) {
 //        LogUtils.printRequest(request);
         String chapter = request.getParameter("chapter");
@@ -159,10 +159,31 @@ public class MainController {
         }
     }
 
+    @RequestMapping("/question/tree")
+    @ResponseBody
+    public String getTree(String chapter, String questionid) {
+
+        if (!StringUtils.isEmpty(questionid)) {
+            File rootDir = new File(sourceFolder);
+            File manifestFile = new File(rootDir, chapter + File.separator + questionid + "/manifest.json");
+
+            System.out.println(manifestFile.getAbsolutePath());
+            return FileUtils.readFileToString(manifestFile);
+        } else {
+            return "{error:0}";
+        }
+    }
+
     @RequestMapping("/chapter/list")
     public String getChapterList(String name, String type) {
 
         return "chapter/list";
+    }
+
+    @RequestMapping("/chapter/question")
+    public String getQuestionDetail(String chapter, String title, String name) {
+
+        return "chapter/question";
     }
 
 

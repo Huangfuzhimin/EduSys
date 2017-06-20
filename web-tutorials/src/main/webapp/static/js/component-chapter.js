@@ -24,14 +24,14 @@ function ChapterList(data) {
             var td = $('<td></td>');
 
             if (item.done) {
-                var a = $('<a class="waves-effect waves-light btn-flat"></a>');
+                var a = $('<a href="' + item.url + '" class="waves-effect waves-light btn-flat"></a>');
                 var iTag = $('<i class="material-icons left">done</i>');
                 a.append(iTag);
                 a.append(item.name);
 
                 td.append(a);
             } else {
-                var a = $('<a class="waves-effect waves-light btn"></a>');
+                var a = $('<a href="' + item.url + '" class="waves-effect waves-light btn"></a>');
                 var iTag = $('<i class="material-icons left">code</i>');
                 a.append(iTag);
                 a.append(item.name);

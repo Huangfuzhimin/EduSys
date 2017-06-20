@@ -67,6 +67,22 @@ function CardList(options) {
 
         cardAction.append(ratingDiv);
         card.append(cardAction);
+
+        //点击
+        if (options.url) {
+            root.click(function () {
+                window.location.href = options.url;
+            });
+        } else if (options.click) {
+            root.click(eval(options.click));
+        }
+
+        root.hover(function () {
+            $(this).css('cursor', 'pointer');
+        }, function () {
+            $(this).css('cursor', 'default');
+        });
+
         return root;
     };
     function addCard(card) {

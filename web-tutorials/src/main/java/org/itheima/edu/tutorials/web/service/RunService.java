@@ -1,5 +1,7 @@
 package org.itheima.edu.tutorials.web.service;
 
+import org.springframework.scheduling.annotation.Async;
+
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
@@ -8,6 +10,10 @@ import java.io.IOException;
  */
 public interface RunService {
 
-    String run(HttpServletRequest request, String username, String chapter, String questionid, String code) throws IOException;
+    String run(String username, String chapter, String questionid, String code) throws IOException;
 
+    String asyncRun(String username, String chapter, String questionid, String code) throws IOException;
+
+    @Async
+    void async(String username, String chapter, String questionid, String code, long currentTime);
 }

@@ -2,6 +2,8 @@ package org.itheima.edu.tutorials.web;
 
 import com.google.gson.Gson;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +20,13 @@ public class ResponseUtils {
         map.put("code", code);
         map.put("data", error);
         return toJson(map);
+    }
+    public static void error(int code, String error, HttpServletResponse resp) {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("code", code);
+        map.put("data", error);
+        String json = toJson(map);
+        outputJson(resp, json);
     }
 
     public static String success() {
@@ -42,5 +51,13 @@ public class ResponseUtils {
 
     private static String toJson(Object obj) {
         return new Gson().toJson(obj);
+    }
+
+    public static void outputJson(HttpServletResponse resp, String s) {
+        try {
+            resp.getOutputStream().write(s.getBytes("utf-8"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

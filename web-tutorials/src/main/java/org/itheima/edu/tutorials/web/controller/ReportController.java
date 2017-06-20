@@ -46,7 +46,22 @@ public class ReportController {
 
         }
     }
+    @RequestMapping(value = "/report1", produces = "text/html;charset=UTF-8")
+    public void getReport(HttpServletResponse response,String path) {
+        File reportDir = new File(path);
+        if (reportDir != null && reportDir.exists()) {
+            File descFile = new File(reportDir, "test.html");
+            System.out.println("descFile: " + descFile.getAbsolutePath());
 
+            String s = FileUtils.readFileToString(descFile);
+            if(TextUtils.isEmpty(s)){
+                writeResult(response, String.format("报告%s不存在", descFile.getAbsolutePath()));
+            }else {
+                writeResult(response, s);
+            }
+
+        }
+    }
     private void writeResult(HttpServletResponse response, String s) {
         try {
             response.getOutputStream().write(s.getBytes("utf-8"));

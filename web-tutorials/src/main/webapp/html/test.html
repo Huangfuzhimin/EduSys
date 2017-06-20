@@ -5,14 +5,88 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <title>首页</title>
+
+    <script src="/static/js/jquery-2.2.3.min.js"></script>
+    <script type="text/javascript" language="JavaScript">
+
+
+        var timerId = null;//定时器ID
+        var cacheKey = "";
+        /**
+         获取执行进度
+         */
+        function getStatus() {
+            var statusUrl = "/async/progress/" + cacheKey;
+            $.get(statusUrl, function (result) {
+                var data = result.data;
+                if (result === null || data === null || data === "null" || data === undefined) {
+                    updateStatus("准备中");
+                    return;
+                }
+                console.log("get progress: result: " + data)
+                var progress = data;
+                updateStatus(progress);
+                var temp = progress.split("/");
+                if (temp[0] === temp[1]) {
+                    updateStatus("完成");
+                    clearInterval(timerId);//停止定时器
+                    clearStatus();//清理redis缓存
+                }
+            })
+        }
+
+        /**
+         * 执行完成后，清理缓存
+         */
+        function clearStatus() {
+            var clearStatusUrl = "/async/clear/" + cacheKey;
+            $.get(clearStatusUrl, function (data) {
+                alert("清理完毕");
+            })
+        }
+
+        /**
+         更新进度显示
+         */
+        function updateStatus(msg) {
+            $("#progress").html(msg);
+        }
+
+        var tryCount = 0;
+        function runAsync(key) {
+            cacheKey = key;
+            $.get("/async/run/" + key, function (result) {
+                tryCount = 0;
+                /*
+                 定时轮询执行进度
+                 */
+                timerId = setInterval(function () {
+                    tryCount ++;
+                    if(tryCount > 20){
+                        clearInterval(timerId);//停止定时器
+                    }
+
+                    getStatus();
+                }, 1000);
+                getStatus();
+            })
+        }
+
+//        $(document).ready(function () {
+//
+//
+//        });
+
+    </script>
 </head>
 <body>
 
-<div>
-    <div><h2>标题</h2></div>
-    <div>hello! test webapp!</div>
-    <div></div>
-</div>
+    <a type="button" href="javascript:void(0)" onclick="runAsync('testKey')">发送异步请求</a>
 
+      <div id="msgBox">
+         <span>请稍候，服务器正在处理中...</span>
+
+         <h1>当前处理进度：<span style="color:red" id="progress">准备中</span></h1>
+      </div>
 </body>
 </html>

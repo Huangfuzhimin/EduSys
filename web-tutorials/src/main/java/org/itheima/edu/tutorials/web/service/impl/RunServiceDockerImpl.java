@@ -64,12 +64,14 @@ public class RunServiceDockerImpl implements RunService{
         }
     }
 
-
     @Override
-    public String run(HttpServletRequest request, String username, String chapter, String questionid, String code) throws IOException{
+    public String run(String username, String chapter, String questionid, String code) throws IOException {
+        return run(username, chapter, questionid, code, System.currentTimeMillis());
+    }
+
+    public String run(String username, String chapter, String questionid, String code, long currentTime) throws IOException{
 
         String responseStr;File rootDir = new File(rootPath);
-        long currentTime = System.currentTimeMillis();
         // /root/newstrap/result/aaa/Array-1/questionxxx/865757798789/src
         // /root/newstrap/result/aaa/Array-1/questionxxx/865757798789/bin
         String tempRoot = "result/" + username + "/" + chapter + "/" + questionid + "/" + currentTime + "/";
@@ -104,9 +106,9 @@ public class RunServiceDockerImpl implements RunService{
 //                e.printStackTrace();
 //            }
             // 在子线程中执行业务调用，并由其负责输出响应，主线程退出
-			final AsyncContext ctx = request.startAsync();
-			ctx.setTimeout(120000);
-			threadPool.execute(new Work(ctx, srcDir, binDir, reportDir, questionid));
+//			final AsyncContext ctx = request.startAsync();
+//			ctx.setTimeout(120000);
+//			threadPool.execute(new Work(ctx, srcDir, binDir, reportDir, questionid));
 //            E:\cms\newstrap\result\vvv\minCat\1496717064235\report\test.html
 //            String resultPath = reportDir + File.separator + "test.html";
             HashMap<String, Object> map = new HashMap<>();
@@ -224,6 +226,16 @@ public class RunServiceDockerImpl implements RunService{
         } catch (Exception e) {
 
         }
+    }
+
+    @Override
+    public String asyncRun(String username, String chapter, String questionid, String code) throws IOException {
+        return null;
+    }
+
+    @Override
+    public void async(String username, String chapter, String questionid, String code, long currentTime) {
+
     }
 
     @PreDestroy

@@ -111,24 +111,78 @@ public class Itheima{
 				});
 			}
 
-			function submitSuccess(result) {
-				var result = jQuery.parseJSON(result);
-				if(result.code == 0) {
-					console.log("success");
-					var data = result.data;
-					var arg = {};
-					arg.username = data.username;
-					arg.chapter = data.chapter;
-					arg.questionid = data.questionid;
-					arg.time = data.currentTime;
+			// 处理同步请求结果
+            function handleSyncResult(result) {
+                var data = result.data;
+                var arg = {};
+                arg.username = data.username;
+                arg.chapter = data.chapter;
+                arg.questionid = data.questionid;
+                arg.time = data.currentTime;
 
-					$("#submit-result").load(
-						"/report",
-						arg,
-						function(data) {
-							console.log(data);
-						}
-					);
+                $("#submit-result").load(
+                    "/report",
+                    arg,
+                    function(data) {
+                        console.log(data);
+                    }
+                );
+            }
+            var timerId = null;//定时器ID
+            var redisURL = "http://120.76.238.32:7379/";
+            var tryCount = 0;
+            // 处理异步请求结果
+            function handleAsyncResult(result) {
+                var code = result.code;
+                var key = result.data;
+
+                if(code == 0){
+                    tryCount = 0;
+
+					timerId = setInterval(function () {
+                        tryCount ++;
+                        if(tryCount > 20){
+                            clearInterval(timerId);//停止定时器
+                        }
+
+                        getStatus(key);
+                    }, 1000);
+                    getStatus(key);
+
+				}
+
+            }
+
+            function getStatus(key){
+                $.get(redisURL + "GET/" + key, function (res) {
+                    console.log(key + " - " + res);
+                    if(res != null && res.GET != null){
+//                    	alert(res); $.parseJSON(res)
+						var bean = $.parseJSON(res.GET);
+                        var html = bean + "<br/>" + bean.data;
+                        console.log(html)
+
+                        clearInterval(timerId);//停止定时器
+
+//                        $("#submit-result").html(html);
+                        $("#submit-result").load(
+                            "/report1",
+							{"path":bean.data},
+                            function(data) {
+//                                console.log(data);
+                            }
+                        );
+					}
+                })
+            }
+
+            function submitSuccess(res) {
+				var result = jQuery.parseJSON(res);
+				if(result.code === 0) {
+					console.log("success");
+					// 提交代码成功
+//					handleSyncResult(result);
+					handleAsyncResult(result);
 				} else {
 					console.log(result.code);
 					console.log(result.data);
@@ -214,6 +268,7 @@ public class Itheima{
 				mode: "text/x-java"
 			});
 		</script>
+		<script src="/static/js/canvas_nest.js" type="text/javascript" charset="utf-8"></script>
 	</body>
 
 </html>

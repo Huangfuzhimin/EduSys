@@ -3,7 +3,9 @@ package org.itheima.edu.tutorials.web.service;
 import org.itheima.edu.tutorials.bean.ChapterDTO;
 import org.itheima.edu.tutorials.bean.QuestionDTO;
 import org.itheima.edu.tutorials.utils.FileUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.itheima.edu.tutorials.utils.PathUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -18,11 +20,6 @@ import java.util.Random;
 @Service
 public class MainService {
 
-
-    // 数据源目录
-    @Value("${config.dir.source}")
-    String sourceFolder;
-
     /**
      * 根据类型获取所有章节
      * @param type  类型  0:java 1:kotlin 2:python
@@ -31,7 +28,7 @@ public class MainService {
     public List<ChapterDTO> getChaptersByType(int type) {
         // TODO: 获取当前这个用户的进度
 
-        File folder = new File(sourceFolder);
+        File folder = new File(PathUtil.sourceDir());
         System.out.println("chapters--> " + folder.getAbsolutePath());
 
         Random random = new Random();
@@ -80,7 +77,7 @@ public class MainService {
     public List<QuestionDTO> readChapter(String chapter) throws UnsupportedEncodingException {
         List<QuestionDTO> dtos = new ArrayList<QuestionDTO>();
 
-        File folder = new File(sourceFolder, chapter);
+        File folder = PathUtil.chapterDir(chapter);
         System.out.println("list--> " + folder.getAbsolutePath());
         if (folder.exists() && folder.isDirectory()) {
             String chapterName = folder.getName();
@@ -99,6 +96,7 @@ public class MainService {
     }
 
 
+    Logger logger = LoggerFactory.getLogger(MainService.class);
     /**
      * 根据章节名, 问题id获取题目描述
      * @param chapter       章节名称
@@ -108,10 +106,10 @@ public class MainService {
     public String getQuestionDesc(String chapter, String questionid) {
         String result;
         if (questionid != null) {
-            File rootDir = new File(sourceFolder);
-            File descFile = new File(rootDir, chapter + File.separator + questionid + "/question.description");
+            File questionDir = PathUtil.questionDir(chapter, questionid);
+            File descFile = new File(questionDir, "question.description");
 
-            System.out.println(descFile.getAbsolutePath());
+            logger.info(descFile.getAbsolutePath());
             result = FileUtils.readFileToString(descFile);
         } else {
             result = "error";

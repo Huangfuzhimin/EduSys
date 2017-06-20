@@ -2,11 +2,9 @@ package org.itheima.edu.tutorials.web.controller;
 
 import org.itheima.edu.tutorials.bean.ChapterDTO;
 import org.itheima.edu.tutorials.bean.QuestionDTO;
-import org.itheima.edu.tutorials.utils.FileUtils;
 import org.itheima.edu.tutorials.utils.JsonUtils;
 import org.itheima.edu.tutorials.web.service.MainService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -60,7 +57,6 @@ public class MainController {
     @ResponseBody
     public String list(HttpServletRequest request, String chapter) {
         List<QuestionDTO> dtos = mainService.getQuestionsByChapter(chapter);
-
         return JsonUtils.toWrapperJson(dtos);
     }
 
@@ -84,6 +80,29 @@ public class MainController {
         }
     }
 
+    @RequestMapping("/question/tree")
+    @ResponseBody
+    public String getTree(String chapter, String questionid) {
+        return mainService.getQuestionTree(chapter,questionid);
+    }
+
+    @RequestMapping("/index")
+    public String index() {
+
+        return "index";
+    }
+
+    @RequestMapping("/chapter/list")
+    public String getChapterList(String name, String type) {
+
+        return "chapter/list";
+    }
+
+    @RequestMapping("/chapter/question")
+    public String getQuestionDetail(String chapter, String title, String name) {
+
+        return "chapter/question";
+    }
 
 
 }

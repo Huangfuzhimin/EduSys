@@ -7,6 +7,7 @@ import org.itheima.edu.tutorials.utils.PathUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -115,5 +116,17 @@ public class MainService {
             result = "error";
         }
         return result;
+    }
+
+    public String getQuestionTree(String chapter,String questionid) {
+        if (!StringUtils.isEmpty(questionid)) {
+            File rootDir = new File(sourceFolder);
+            File manifestFile = new File(rootDir, chapter + File.separator + questionid + "/manifest.json");
+
+            System.out.println(manifestFile.getAbsolutePath());
+            return FileUtils.readFileToString(manifestFile);
+        } else {
+            return "error";
+        }
     }
 }

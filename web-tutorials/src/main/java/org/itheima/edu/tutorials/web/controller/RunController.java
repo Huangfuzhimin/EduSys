@@ -26,8 +26,8 @@ import java.text.SimpleDateFormat;
 @RequestMapping(produces = "application/json;charset=UTF-8")
 public class RunController {
 
-//    @Resource(name = "runServiceDockerImpl")    // docker编译
-    @Resource(name = "runServiceLocalImpl")   // 本地直接编译
+    @Resource(name = "runServiceDockerImpl")    // docker编译
+//    @Resource(name = "runServiceLocalImpl")   // 本地直接编译
     RunService runService;
 
     // 运行指定题目代码

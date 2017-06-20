@@ -2,6 +2,7 @@ package org.itheima.edu.tutorials.utils.cmd;
 
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -53,5 +54,23 @@ public class JavaCmd {
                 .append(" -cp").append(" ." + separator).append(StringUtils.join(classpath, separator))
                 .append(" " + classMain).append(" ").append(StringUtils.join(args, " "))
                 .toString();
+    }
+
+    public String[] createArr() {
+
+//            final String[] command = {
+//                    "java", "-Dfile.encoding=UTF-8",
+//                    "-Djava.ext.dirs="+rootPath+"/exam/" + questionid + "/lib",
+//                    "-cp",".:"+rootPath+"/exam/" + questionid + ":" + binDir.getAbsolutePath(),
+//                    "TestMain", reportDir.getAbsolutePath()};
+        ArrayList<String> cmdList = new ArrayList<String>(){{
+            add("java");
+            add("-Dfile.encoding="+encoding);
+            add("-Djava.ext.dirs="+StringUtils.join(extDirs, separator));
+            add("-cp");add("." + separator + StringUtils.join(classpath, separator));
+            add(classMain);add(StringUtils.join(args, " "));
+        }};
+
+        return cmdList.toArray(new String[cmdList.size()]);
     }
 }

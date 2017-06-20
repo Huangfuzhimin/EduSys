@@ -5,7 +5,7 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
 		<title>java练习</title>
-		<script src="/static/js/jquery-2.2.3.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="/static/js/jquery-3.1.1.js" type="text/javascript" charset="utf-8"></script>
 		<script src="/static/js/jquery.params.js" type="text/javascript" charset="utf-8"></script>
 		<script src="/static/js/itheima.js" type="text/javascript" charset="utf-8"></script>
 		<link rel="stylesheet" type=text/css href="/static/css/itheima.css">
@@ -262,17 +262,20 @@ public class Itheima{
 					var arg = {
 						"chapter": chapter,
 						"username": username,
-						"code": code,
-						"questionid": questionid
+						"questionid": questionid,
+						"code": code
 					};
 //					console.log(JSON.stringify(arg))
 
-					$("#submit-result").html("");
-					
+
+                    var $submitArea = $("#submit-result");
+
 					if(!username || !code || !questionid) {
 						alert("请确认代码和题目已获取")
+                    	$submitArea.html("请确认代码已编写后再提交");
 						return;
 					}
+					$submitArea.html("编译中...");
 
 					//				
 					$.post("/run", arg, submitSuccess)

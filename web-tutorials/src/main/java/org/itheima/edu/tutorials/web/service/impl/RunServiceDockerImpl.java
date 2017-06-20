@@ -4,12 +4,22 @@ import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.LogStream;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
+import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.*;
+import org.apache.commons.lang.StringUtils;
 import org.itheima.edu.jcompiler.JCompilerUtils;
 import org.itheima.edu.tutorials.utils.JsonUtils;
+import org.itheima.edu.tutorials.utils.PathUtil;
+import org.itheima.edu.tutorials.utils.RedisUtil;
 import org.itheima.edu.tutorials.utils.StreamUtils;
+import org.itheima.edu.tutorials.utils.cmd.Commander;
 import org.itheima.edu.tutorials.web.ResponseCode;
+import org.itheima.edu.tutorials.web.ResponseUtils;
 import org.itheima.edu.tutorials.web.service.RunService;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -31,17 +41,12 @@ import java.util.concurrent.Executors;
 @Service
 public class RunServiceDockerImpl implements RunService{
 
-    public static final String URI_DOCKER = "http://192.168.1.131:2735";
+    public static final String URI_DOCKER = "http://192.168.1.132:2735";
 //    public static final String URI_DOCKER = "http://localhost:2735";
-    // 数据源目录
-    @Value("${config.dir.source}")
-    String sourceFolder;
-    //	private static final String rootPath = "/root/newstrap";
+
     @Value("${config.dir.root}")
     String rootPath;
 
-
-    private ExecutorService threadPool;
     private DockerClient docker;
 
 
@@ -56,7 +61,6 @@ public class RunServiceDockerImpl implements RunService{
     }
 
     public void init() throws ServletException {
-        threadPool = Executors.newFixedThreadPool(20);
         try {
             docker = DefaultDockerClient.fromEnv().uri(URI_DOCKER).build();
         } catch (DockerCertificateException e) {
@@ -64,117 +68,13 @@ public class RunServiceDockerImpl implements RunService{
         }
     }
 
-    @Override
-    public String run(String username, String chapter, String questionid, String code) throws IOException {
-        return run(username, chapter, questionid, code, System.currentTimeMillis());
-    }
-
-    public String run(String username, String chapter, String questionid, String code, long currentTime) throws IOException{
-
-        String responseStr;File rootDir = new File(rootPath);
-        // /root/newstrap/result/aaa/Array-1/questionxxx/865757798789/src
-        // /root/newstrap/result/aaa/Array-1/questionxxx/865757798789/bin
-        String tempRoot = "result/" + username + "/" + chapter + "/" + questionid + "/" + currentTime + "/";
-        File srcDir = new File(rootDir, tempRoot + "src");
-        srcDir.mkdirs();
-        File binDir = new File(rootDir, tempRoot + "bin");
-        binDir.mkdirs();
-        // /root/newstrap/result/aaa/Array-1/questionxxx/865757798789/report
-        File reportDir = new File(rootDir,tempRoot + "report");
-        reportDir.mkdirs();
-        File ItheimaJava = new File(srcDir, "Itheima.java");
-        FileOutputStream fos = new FileOutputStream(ItheimaJava);
-        fos.write(code.getBytes("utf-8"));
-        StreamUtils.closeIO(fos);
-        JCompilerUtils.Result result = JCompilerUtils.doMagic(binDir.getAbsolutePath(), new String[]{ItheimaJava.getAbsolutePath()});
-        if (result.code == 200) {
-//            E:\cms\newstrap\exam\String-2\mirrorEnds\
-//            E:\cms\newstrap\exam\String-2\mirrorEnds\libs
-            String questionPath = sourceFolder + File.separator + chapter + File.separator + questionid ;
-            String command =
-                    "java" + " -Dfile.encoding=UTF-8"
-                            + " -Djava.ext.dirs=" + questionPath + "/libs"
-                            + " -cp .;" + questionPath + ";" + binDir.getAbsolutePath()
-                            + " TestMain " + reportDir.getAbsolutePath();
-            System.out.println(command);
-//            Process p = Runtime.getRuntime().exec(command);
-//            try {
-//                String parseCmdStream = StreamUtils.parseCmdStream(p.getInputStream());
-////                System.out.println(parseCmdStream);
-//                p.waitFor();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-            // 在子线程中执行业务调用，并由其负责输出响应，主线程退出
-//			final AsyncContext ctx = request.startAsync();
-//			ctx.setTimeout(120000);
-//			threadPool.execute(new Work(ctx, srcDir, binDir, reportDir, questionid));
-//            E:\cms\newstrap\result\vvv\minCat\1496717064235\report\test.html
-//            String resultPath = reportDir + File.separator + "test.html";
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("username", username);
-            map.put("chapter", chapter);
-            map.put("questionid", questionid);
-            map.put("currentTime", currentTime);
-
-            responseStr = JsonUtils.toWrapperJson(map);
-        } else {
-            responseStr = JsonUtils.toWrapperJson(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message);
-        }
-        return responseStr;
-    }
-
-
-
-    class Work implements Runnable {
-        private AsyncContext context;
-        private File srcDir;
-        private File binDir;
-        private File reportDir;
-        private String questionid;
-
-
-        public Work(AsyncContext context, File srcDir, File binDir, File reportDir, String questionid) {
-            this.context = context;
-            this.srcDir = srcDir;
-            this.binDir = binDir;
-            this.reportDir = reportDir;
-            this.questionid = questionid;
-        }
-
-        @Override
-        public void run() {
-            try {
-                runDocker(srcDir, binDir, reportDir, questionid);
-
-                File reportFile = new File(reportDir, "html/suite1_test1_results.html");
-                if (reportFile.exists()) {
-                    FileInputStream fis = new FileInputStream(reportFile);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    byte[] buffer = new byte[1024];
-                    int len = 0;
-                    while ((len = fis.read(buffer)) != -1) {
-                        baos.write(buffer, 0, len);
-                    }
-                    fis.close();
-                    baos.close();
-                    context.getResponse().getOutputStream().write(baos.toByteArray());
-                } else {
-                    context.getResponse().getOutputStream().write("time out...".getBytes());
-                }
-                context.complete();
-            } catch (IOException e) {
-
-            }
-        }
-    }
-
-    public void runDocker(File srcDir, File binDir, File reportDir, String questionid) {
+    public boolean runDocker(String[] command, File reportDir) {
+        String id = null;
         try {
 
             final HostConfig hostConfig = HostConfig.builder()
-                    .appendBinds(HostConfig.Bind.from(rootPath).to(rootPath).readOnly(true).build())
-                    .appendBinds(HostConfig.Bind.from(reportDir.getAbsolutePath()).to(reportDir.getAbsolutePath()).readOnly(false).build())
+                    .appendBinds(HostConfig.Bind.from("/root/newstrap/").to("/root/newstrap/").readOnly(true).build())
+                    .appendBinds(HostConfig.Bind.from("/root/newstrap/result/report/").to("/root/newstrap/result/report/").readOnly(false).build())
                     .build();
             // Create container with exposed ports
             final ContainerConfig containerConfig = ContainerConfig.builder().hostConfig(hostConfig)
@@ -182,60 +82,61 @@ public class RunServiceDockerImpl implements RunService{
                     .attachStdout(true).build();
 
             final ContainerCreation creation = docker.createContainer(containerConfig);
-            final String id = creation.id();
+            id = creation.id();
 
             // Inspect container
             final ContainerInfo info = docker.inspectContainer(id);
-            System.out.println(info);
+            System.out.println("ContainerInfo: " + info);
 
             // Start container
             docker.startContainer(id);
-            // " -cp + ":" + " TestMain " +
-            final String[] command = {
-                    "java", "-Dfile.encoding=UTF-8",
-                    "-Djava.ext.dirs="+rootPath+"/exam/" + questionid + "/lib",
-                    "-cp",".:"+rootPath+"/exam/" + questionid + ":" + binDir.getAbsolutePath(),
-                    "TestMain", reportDir.getAbsolutePath()};
+
             final ExecCreation execCreation = docker.execCreate(id, command,
                     DockerClient.ExecCreateParam.attachStdout(), DockerClient.ExecCreateParam.attachStderr());
             final LogStream output = docker.execStart(execCreation.id());
             System.out.println("ready go ");
-            Timer timer = new Timer();
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    try {
-                        //docker timer make sure docker stop after run 15seconds
-                        docker.stopContainer(id, 0);
-                        docker.removeContainer(id, true);
-                    } catch (Exception e) {
+            closeContainerDelay(id);
 
-                    }
-                }
-            }, 15000);
             final String execOutput = output.readFully();
-            System.out.println(execOutput);
+            System.out.println("execOutput: " + execOutput);
 
-            // Kill container
-            docker.killContainer(id);
-            System.out.println("killed :" + id);
-            // Remove container
-            docker.removeContainer(id, true);
-            // Close the docker client
-            //docker.close();
+            return true;
         } catch (Exception e) {
-
+            e.printStackTrace();
+            return false;
+        } finally {
+            if(!StringUtils.isEmpty(id)){
+                try {
+                    // Kill container
+                    docker.killContainer(id);
+                    System.out.println("killed :" + id);
+                    // Remove container
+                    docker.removeContainer(id, true);
+                    // Close the docker client
+                    //docker.close();
+                } catch (DockerException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
-    @Override
-    public String asyncRun(String username, String chapter, String questionid, String code) throws IOException {
-        return null;
-    }
+    private void closeContainerDelay(String id) {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    //docker timer make sure docker stop after run 15seconds
+                    docker.stopContainer(id, 0);
+                    docker.removeContainer(id, true);
+                } catch (Exception e) {
 
-    @Override
-    public void async(String username, String chapter, String questionid, String code, long currentTime) throws IOException {
-
+                }
+            }
+        }, 15 * 1000);
     }
 
     @PreDestroy
@@ -243,4 +144,132 @@ public class RunServiceDockerImpl implements RunService{
         System.out.println("I'm  destory method  using  @PreDestroy.....");
     }
 
+
+
+    Logger logger = LoggerFactory.getLogger(RunServiceDockerImpl.class);
+    @Autowired
+    RedisUtil redisUtil;
+
+
+    @Override
+    public String run(String username, String chapter, String questionid, String code) throws IOException {
+        return run(username, chapter, questionid, code, System.currentTimeMillis());
+    }
+
+    @Override
+    public String asyncRun(String username, String chapter, String questionid, String code) throws IOException {
+        return null;
+    }
+
+    public String run(String username, String chapter, String questionid, String code, long currentTime) throws IOException {
+
+        // /root/newstrap/result/aaa/Array-1/lucky13/865757798789/src
+        // /root/newstrap/result/aaa/Array-1/lucky13/865757798789/bin
+        // /root/newstrap/result/aaa/Array-1/lucky13/865757798789/report
+        PathUtil.RunDir runDir = PathUtil.newRunDir(username, chapter, questionid, currentTime);
+
+        File srcDir = runDir.getChildDir("src");
+        File binDir = runDir.getChildDir("bin");
+        File reportDir = runDir.getChildDir("report");
+        File questionDir = PathUtil.questionDir(chapter, questionid);
+//        String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);
+        String cacheKey = String.format("%s_%s_%s", username, chapter, questionid);
+        logger.info("cacheKey: " + cacheKey + " reportDir: " + reportDir.getAbsolutePath());
+
+        // 1. 写出src到文件
+        File ItheimaJava = writeSrc(code, srcDir);
+
+        // 2. 生成class到bin目录
+        JCompilerUtils.Result result = compileSrc(ItheimaJava, binDir);
+
+        String[] command = Commander.java("TestMain")
+                .args(new String[]{reportDir.getAbsolutePath()})   // 报表输出路径
+                .classpath(questionDir.getAbsolutePath())          // 题库根目录
+                .classpath(binDir.getAbsolutePath())               // 编译结果目录
+                .extDir(questionDir.getAbsolutePath() + File.separator + "libs")   // 依赖库目录
+                .separator(":")
+                .createArr();
+
+        String finalCommand = StringUtils.join(command, " ");
+        logger.info("finalCommand: " + finalCommand);
+
+        // 3. 测试class, 把结果放到report目录  E:\cms\newstrap\result\vvv\minCat\1496717064235\report\test.html
+        boolean isSuccess;
+        if (result.code == 200) {
+            isSuccess = runDocker(command, reportDir);
+//            isSuccess = runTest(command);
+        } else {
+            isSuccess = false;
+        }
+
+
+        // 4. 得到测试结果, 返回并将成功信息写入缓存
+        String responseStr;
+        if (isSuccess) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("username", username);
+            map.put("chapter", chapter);
+            map.put("questionid", questionid);
+            map.put("currentTime", currentTime);
+
+            responseStr = JsonUtils.toWrapperJson(map);
+
+            redisUtil.setCacheObject(cacheKey, ResponseUtils.success(0, reportDir.getAbsolutePath()));
+            redisUtil.publish(cacheKey, ResponseUtils.success(0, reportDir.getAbsolutePath()));
+        } else {
+            responseStr = JsonUtils.toWrapperJson(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message);
+
+            redisUtil.setCacheObject(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message));
+            redisUtil.publish(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message));
+        }
+        System.out.println("写出完毕->" + cacheKey);
+
+        return responseStr;
+    }
+
+    private boolean runTest(String command) throws IOException {
+        System.out.println(command);
+        Process p = Runtime.getRuntime().exec(command);
+        try {
+            String parseCmdStream = StreamUtils.parseCmdStream(p.getInputStream());
+//            System.out.println(parseCmdStream);
+            p.waitFor();
+            return true;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @NotNull
+    private JCompilerUtils.Result compileSrc(File itheimaJava, File binDir) {
+        return JCompilerUtils.doMagic(binDir.getAbsolutePath(), new String[]{itheimaJava.getAbsolutePath()});
+    }
+
+    @NotNull
+    private File writeSrc(String code, File srcDir) throws IOException {
+        File ItheimaJava = new File(srcDir, "Itheima.java");
+        FileOutputStream fos = new FileOutputStream(ItheimaJava);
+        fos.write(code.getBytes("utf-8"));
+        StreamUtils.closeIO(fos);
+        return ItheimaJava;
+    }
+
+//    @Override
+//    public String asyncRun(String username, String chapter, String questionid, String code) throws IOException {
+//        // 生成时间
+//        long currentTime = System.currentTimeMillis();
+//        // 异步执行
+//        async(username, chapter, questionid, code, currentTime);
+//
+//        // 返回缓存key (SHA1数字摘要)
+//        String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);
+//        System.out.println("asyncRun -> cacheKey: " + cacheKey);
+//        return ResponseUtils.success(cacheKey);
+//    }
+
+    @Override
+    public void async(String username, String chapter, String questionid, String code, long currentTime) throws IOException {
+        run(username, chapter, questionid, code, currentTime);
+    }
 }

@@ -58,6 +58,10 @@ public class JavaCmd {
 
     public String[] createArr() {
 
+//        java -Dfile.encoding=UTF-8 -Djava.ext.dirs=E:\cms\newstrap\exam\Array-1\firstLast6\libs
+//                -cp .:E:\cms\newstrap\exam\Array-1\firstLast6:E:\cms\newstrap\result\aaa\Array-1\firstLast6\1497945848954\bin
+//        TestMain E:\cms\newstrap\result\aaa\Array-1\firstLast6\1497945848954\report
+
 //            final String[] command = {
 //                    "java", "-Dfile.encoding=UTF-8",
 //                    "-Djava.ext.dirs="+rootPath+"/exam/" + questionid + "/lib",

@@ -41,14 +41,13 @@ import java.util.concurrent.Executors;
 @Service
 public class RunServiceDockerImpl implements RunService{
 
-    public static final String URI_DOCKER = "http://192.168.1.132:2735";
-//    public static final String URI_DOCKER = "http://localhost:2735";
-
     @Value("${config.dir.root}")
     String rootPath;
 
-    private DockerClient docker;
+    @Value("${docker.uri}")
+    String docker_uri;
 
+    private DockerClient docker;
 
     @PostConstruct
     public void postConstruct() {
@@ -62,19 +61,19 @@ public class RunServiceDockerImpl implements RunService{
 
     public void init() throws ServletException {
         try {
-            docker = DefaultDockerClient.fromEnv().uri(URI_DOCKER).build();
+            docker = DefaultDockerClient.fromEnv().uri(docker_uri).build();
         } catch (DockerCertificateException e) {
             e.printStackTrace();
         }
     }
 
-    public boolean runDocker(String[] command, File reportDir) {
+    public boolean runDocker(String[] command, String reportPath) {
         String id = null;
         try {
 
             final HostConfig hostConfig = HostConfig.builder()
-                    .appendBinds(HostConfig.Bind.from("/root/newstrap/").to("/root/newstrap/").readOnly(true).build())
-                    .appendBinds(HostConfig.Bind.from("/root/newstrap/result/report/").to("/root/newstrap/result/report/").readOnly(false).build())
+                    .appendBinds(HostConfig.Bind.from(rootPath).to(rootPath).readOnly(true).build())
+                    .appendBinds(HostConfig.Bind.from(reportPath).to(reportPath).readOnly(false).build())
                     .build();
             // Create container with exposed ports
             final ContainerConfig containerConfig = ContainerConfig.builder().hostConfig(hostConfig)
@@ -196,7 +195,7 @@ public class RunServiceDockerImpl implements RunService{
         // 3. 测试class, 把结果放到report目录  E:\cms\newstrap\result\vvv\minCat\1496717064235\report\test.html
         boolean isSuccess;
         if (result.code == 200) {
-            isSuccess = runDocker(command, reportDir);
+            isSuccess = runDocker(command, reportDir.getAbsolutePath());
 //            isSuccess = runTest(command);
         } else {
             isSuccess = false;

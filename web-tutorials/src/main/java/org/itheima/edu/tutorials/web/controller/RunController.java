@@ -5,10 +5,8 @@ import org.itheima.edu.tutorials.utils.JsonUtils;
 import org.itheima.edu.tutorials.web.ResponseUtils;
 import org.itheima.edu.tutorials.web.service.AsyncTest;
 import org.itheima.edu.tutorials.web.service.RunService;
-import org.itheima.edu.tutorials.web.service.impl.RunServiceLocalImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResultUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -16,7 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 
 /**
@@ -26,8 +24,8 @@ import java.text.SimpleDateFormat;
 @RequestMapping(produces = "application/json;charset=UTF-8")
 public class RunController {
 
-    @Resource(name = "runServiceDockerImpl")    // docker编译
-//    @Resource(name = "runServiceLocalImpl")   // 本地直接编译
+//    @Resource(name = "runServiceDockerImpl")    // docker编译
+    @Resource(name = "runServiceLocalImpl")   // 本地直接编译
     RunService runService;
 
     // 运行指定题目代码

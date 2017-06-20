@@ -29,6 +29,15 @@
 
     <script src="${pageContext.request.contextPath}/static/js/component-project.js" type="text/javascript"></script>
 
+    <script>
+        String.prototype.format = function(){
+            var args = arguments;
+            return this.replace(/\{(\d+)\}/g,
+                function(m,i){
+                    return args[i];
+                });
+        }
+    </script>
 </head>
 <body>
 <!-- Dropdown Structure -->
@@ -53,11 +62,12 @@
 
 <div id="layout" class="easyui-layout" data-options="fit:true" style="padding-bottom: 60px">
     <div data-options="region:'west',split:true" style="width:35%">
-        <div class="easyui-accordion" data-options="fit:true">
+        <div id="accordion" class="easyui-accordion" data-options="fit:true">
             <div title="题目描述" data-options="iconCls:'icon-j-info'">
                 <div id="projectDesc" style="padding: 8px;"></div>
             </div>
             <div title="控制台" data-options="iconCls:'icon-j-console'">
+                <div id="projectConsole" style="padding: 8px;"></div>
             </div>
         </div>
     </div>
@@ -80,6 +90,7 @@
 
 <script type="text/javascript">
     var structure = null;
+    var redisURL = "http://120.76.238.32:7379/";
 
     function loadTree() {
         var url = "${pageContext.request.contextPath}/question/tree";
@@ -94,7 +105,7 @@
     }
 
     function loadDesc() {
-        var url = "${pageContext.request.contextPath}/question/desc";
+        var url = "${pageContext.request.contextPath}/desc";
         var data = {
             "chapter": $.query.get("chapter"),
             "questionid": $.query.get("name")
@@ -110,6 +121,7 @@
         if (structure == null) {
             return;
         }
+        $("#accordion").accordion('select', '题目描述');
 
         var codes = structure.getCodes();
         var code = codes[0].content;//临时使用
@@ -127,17 +139,70 @@
         var callback = function (result) {
             console.log(result);
         }
-        $.post("/run", data, callback,"json");
+        $.post("/run", data, callback, "json");
     }
 
     function clickReset() {
         alert('reset');
     }
 
+    function subscribeChannel(channelKey) {
+        function checkData() {
+            if (xhr.readyState === 3) {
+                var response = xhr.responseText;
+                var chunk = response.slice(previous_response_length);
+                previous_response_length = response.length;
+                var sub = $.parseJSON(chunk);
+                var sub_arr = sub.SUBSCRIBE;
+
+                var bean = sub_arr[2];
+                if (sub_arr[1] === channelKey && (typeof bean) === "string") {
+                    bean = $.parseJSON(bean);
+                    if (bean.code === 0) {
+                        loadReport(bean.data);
+                    } else {
+                        var show = "错误码: " + bean.code + "<br/>";
+                        show += "错误信息: <br/>" + bean.data;
+
+                        $("#projectConsole").html(show);
+                        $("#accordion").accordion('select', '控制台');
+                    }
+
+                }
+            }
+        }
+
+        var previous_response_length = 0;
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", redisURL + "SUBSCRIBE/" + channelKey, true);
+        xhr.onreadystatechange = checkData;
+        xhr.send(null);
+//                console.log("xhr.send: " + key);
+    }
+
+    function loadReport(data) {
+        $("#projectConsole").load(
+            "${pageContext.request.contextPath}/report1",
+            {"path": data},
+            function (res) {
+                $("#accordion").accordion('select', '控制台');
+            }
+        );
+
+    }
+
 
     $(function () {
         loadTree();
         loadDesc();
+
+        var username = "aaa";
+        var chapter = $.query.get("chapter");
+        var questionid = $.query.get("name");
+
+        // 订阅指定用户的指定题目
+        var channelKey = "{0}_{1}_{2}".format(username, chapter, questionid);
+        subscribeChannel(channelKey);
     })
 </script>
 

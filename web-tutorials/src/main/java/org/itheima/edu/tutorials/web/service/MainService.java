@@ -23,7 +23,8 @@ public class MainService {
 
     /**
      * 根据类型获取所有章节
-     * @param type  类型  0:java 1:kotlin 2:python
+     *
+     * @param type 类型  0:java 1:kotlin 2:python
      * @return
      */
     public List<ChapterDTO> getChaptersByType(int type) {
@@ -56,6 +57,7 @@ public class MainService {
 
     /**
      * 根据章节获取所有题目
+     *
      * @param chapter 章节名称
      * @return
      */
@@ -86,7 +88,7 @@ public class MainService {
             File[] files = folder.listFiles();
             for (File file : files) {
                 File descFile = new File(file, "question.description");
-                File titleFile = new File(file,  "question.title");
+                File titleFile = new File(file, "question.title");
                 String title = FileUtils.readFileToString(titleFile);
                 String desc = FileUtils.readFileToString(descFile);
                 dtos.add(new QuestionDTO(chapterName, file.getName(), title, desc));
@@ -98,11 +100,13 @@ public class MainService {
 
 
     Logger logger = LoggerFactory.getLogger(MainService.class);
+
     /**
      * 根据章节名, 问题id获取题目描述
-     * @param chapter       章节名称
-     * @param questionid    问题id
-     * @return  题目描述
+     *
+     * @param chapter    章节名称
+     * @param questionid 问题id
+     * @return 题目描述
      */
     public String getQuestionDesc(String chapter, String questionid) {
         String result;
@@ -118,10 +122,10 @@ public class MainService {
         return result;
     }
 
-    public String getQuestionTree(String chapter,String questionid) {
+    public String getQuestionTree(String chapter, String questionid) {
         if (!StringUtils.isEmpty(questionid)) {
-            File rootDir = new File(sourceFolder);
-            File manifestFile = new File(rootDir, chapter + File.separator + questionid + "/manifest.json");
+            File questionDir = PathUtil.questionDir(chapter, questionid);
+            File manifestFile = new File(questionDir, "manifest.json");
 
             System.out.println(manifestFile.getAbsolutePath());
             return FileUtils.readFileToString(manifestFile);

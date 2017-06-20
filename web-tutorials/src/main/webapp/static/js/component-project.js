@@ -1,28 +1,9 @@
-function CodePanel() {
+function ProjectStructure(id, data, tabsId) {
+    this.id = id;
+    this.data = data;
+    this.tabsId = tabsId;
     this.map = new Map();
 
-    this.container = $('<div style="width: 100%;height: 100%"></div>');
-    this.breadcrumb = $('<div style="background-color: #cccccc"></div>');
-    this.container.append(this.breadcrumb);
-
-    this.tabContainer = $('<div style="width: 100%;height: 85%"></div>');
-    this.container.append(this.tabContainer);
-    this.tabTitleContainer = $('<ul class="tabs"></ul>');
-    this.tabContainer.append(this.tabTitleContainer);
-
-    this.optionsContianer = $('<div class="right-align" style="background-color: #cccccc"></div>');
-    this.container.append(this.optionsContianer);
-
-    this.breadcrumb.append($('<span class="breadcrumb" style="background-color:transparent;margin-bottom: 0px;padding: 2px;">src</span>'));
-
-    this.btnRun = $('<a class="btn-floating red" style="margin: 5px;"><i class="material-icons">send</i></a>');
-    // this.btnReset = $('<a class="btn-floating red" style="margin: 5px;"><i class="material-icons">refresh</i></a>');
-    this.optionsContianer.append(this.btnRun);
-    // this.optionsContianer.append(this.btnReset);
-
-    var self = this;
-
-    //创建编辑区
     this.createEditor = function (editorId) {
         var editor = ace.edit(editorId);
         editor.setTheme("ace/theme/chrome");
@@ -44,36 +25,7 @@ function CodePanel() {
             enableLiveAutocompletion: true
         });
         return editor;
-    }
-
-    //判断是否存在
-    this.exists = function (title) {
-        if (self.map.get(title)) {
-            return true;
-        }
-        return false;
-    }
-    //判断是否打开
-    this.isOpen = function (title) {
-        var item = self.map.get(title);
-        try {
-            if (item.editor) {
-                return true;
-            }
-        } catch (err) {
-        }
-        return false;
-    }
-
-    //选中某个tab
-    this.select = function (title) {
-        self.tabTitleContainer.tabs('select_tab', title);
-        self.map.get(title).editor.focus();
-        if (self.breadcrumb.children().size() > 1) {
-            self.breadcrumb.children(':last-child').remove();
-        }
-        self.breadcrumb.append($('<span class="breadcrumb" style="background-color:transparent;margin-bottom: 0px;padding: 2px;">' + title + '</span>'));
-    }
+    };
 
     function Map() {
         this.elements = new Array();
@@ -175,81 +127,53 @@ function CodePanel() {
             return arr;
         };
     }
+
+    //加载初始化
+    this.load();
 }
 
-CodePanel.prototype = {
-    openTab: function (title) {
+ProjectStructure.prototype = {
+    load: function () {
+        var id = this.id;
+        var data = this.data;
         var self = this;
-        if (!self.exists(title)) {
+        $('#' + id).tree({
+            "data": data,
+            "onClick": function (node) {
+                self.addTab(node);
+            }
+        });
+    },
+    addTab: function (node) {
+        var attrs = node.attributes;
+        if (attrs == null || attrs.type != 1) {
             return;
         }
-
-        if (self.isOpen(title)) {
-            //存在，就选中
-            self.select(title);
+        var id = '#' + this.tabsId;
+        var title = node.text;
+        var exists = $(id).tabs('exists', title);
+        if (exists) {
+            //存在
+            $(id).tabs('select', title);
         } else {
-            //不存在，创建
-            //创建tab
-            var tabDiv = $('<li class="tab col"><a href="#' + title + '">' + title + '</a></li>');
-            //创建tab对应的content
-            var contentDiv = $('<div id="' + title + '" style="width: 100%;height: 90%;"></div>');
+            //不存在
+            $(id).tabs('add', {
+                title: title,
+                content: '<div id="' + title + '" style="width: 100%;height: 90%;"></div>',
+                closable: true
+            });
 
-            //添加tab
-            self.tabTitleContainer.append(tabDiv);
+            //创建编辑区
+            var editor = this.createEditor(title);
+            editor.setReadOnly(attrs.readOnly == undefined ? true : attrs.readOnly);
 
-            //添加content
-            self.tabContainer.append(contentDiv);
-
-            //创建编辑器
-            var tab = self.map.get(title);
-            var editor = self.createEditor(title);
-            editor.setReadOnly(tab.readOnly);
-            editor.setValue(tab.content);
-            //存储
-            tab.editor = editor;
-
-            //选中
-            self.select(title);
-        }
-        return true;
-    },
-    runClick: function (click) {
-        var self = this;
-        self.btnRun.click(click);
-    },
-    getCodes: function () {
-        var self = this;
-
-        var keys = self.map.keys();
-        var datas = [];
-        for (var i = 0; i < keys.length; i++) {
-            var item = self.map.get(keys[i]);
-            var editor = item.editor;
-            var content = editor == undefined ? item.content : editor.getValue();
-
-            datas[i] = {
-                name: item.title,
-                content: content
-            }
-        }
-        return datas;
-    },
-    init: function (datas) {
-        var self = this;
-
-        for (var i = 0; i < datas.length; i++) {
-            var data = datas[i];
-            var readOnly = data.attributes.readonly == undefined ? false : data.attributes.readonly;
-            var item = {
-                title: data.text,
-                content: data.content,
-                readOnly: readOnly
-            }
-
-            self.map.put(item.title, item);
+            this.map.put(title, {editor: editor, source: node});
         }
     },
-    layout: function (root) {
-        root.append(this.container);
+    resize: function () {
+        for (var i = 0; i < this.map.size();i++) {
+            var e = this.map.element(i);
+            e.value.editor.resize(false);
+        }
     }
 }

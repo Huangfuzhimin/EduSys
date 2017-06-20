@@ -5,95 +5,127 @@
     <meta charset="UTF-8">
     <title>Title</title>
 
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/plugin/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/plugin/split/css/split.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/static/plugin/materialize/css/icon.css">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/static/plugin/materialize/css/materialdesignicons.min.css">
+    <!-- materialize CSS -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/static/plugin/materialize/css/materialize.min.css">
 
-    <!-- jquery -->
-    <script src="${pageContext.request.contextPath}/static/plugin/jquery/jquery.min.js"></script>
-    <script src="${pageContext.request.contextPath}/static/plugin/jquery/jquery.params.js"></script>
+    <!-- easy ui 部分 -->
+    <link rel="stylesheet" type="text/css"
+          href="${pageContext.request.contextPath}/static/plugin/easyui/themes/material/easyui.css">
+    <link rel="stylesheet" type="text/css"
+          href="${pageContext.request.contextPath}/static/plugin/easyui/themes/icon.css">
+    <script type="text/javascript" src="${pageContext.request.contextPath}/static/plugin/jquery/jquery.min.js"></script>
+    <script type="text/javascript"
+            src="${pageContext.request.contextPath}/static/plugin/easyui/jquery.easyui.min.js"></script>
 
-    <!-- material -->
-    <script src="${pageContext.request.contextPath}/static/plugin/materialize/js/materialize.js"></script>
-
-    <!-- 分隔js -->
-    <script src="${pageContext.request.contextPath}/static/plugin/split/split.js"></script>
-    <!-- 树js -->
-    <script src="${pageContext.request.contextPath}/static/plugin/treeview/js/bootstrap-treeview.min.js"></script>
-    <!-- ace -->
-    <script src="${pageContext.request.contextPath}/static/plugin/ace/src-min-noconflict/ace.js" type="text/javascript"
+    <!-- ace 部分 -->
+    <script src="${pageContext.request.contextPath}/static/plugin/ace/src-min/ace.js" type="text/javascript"
             charset="utf-8"></script>
-    <script src="${pageContext.request.contextPath}/static/plugin/ace/src-min-noconflict/ext-language_tools.js"></script>
+    <script src="${pageContext.request.contextPath}/static/plugin/ace/src-min/ext-language_tools.js"></script>
 
+    <script src="${pageContext.request.contextPath}/static/js/component-project.js" type="text/javascript"></script>
 
-    <script type="text/javascript" src="${pageContext.request.contextPath}/static/js/component-code.js"></script>
-
-    <style>
-        html, body {
-            height: 100%;
-        }
-
-        .code {
-            padding: 10px;
-        }
-
-        .code h3 {
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .code p {
-            padding: 0px;
-        }
-
-        .code table, .code tr, .code td {
-            border: 1px;
-            border-color: black;
-        }
-    </style>
 </head>
 <body>
-
-<div style="height: 90%;">
-    <!-- 左侧 -->
-    <div id="containerLeft" class="split split-horizontal">
-        <!-- 上部分 -->
-        <div id="containerLeftUp" class="split split-vertical code"></div>
-        <!-- 下部分 -->
-        <div id="containerLeftDown" class="split split-vertical" style="background-color: #536dfe"></div>
+<!-- Dropdown Structure -->
+<ul id="dropdown1" class="dropdown-content">
+    <li><a href="#!">one</a></li>
+    <li><a href="#!">two</a></li>
+    <li class="divider"></li>
+    <li><a href="#!">three</a></li>
+</ul>
+<nav>
+    <div class="nav-wrapper teal">
+        <a href="#!" class="brand-logo">Logo</a>
+        <ul class="right hide-on-med-and-down">
+            <li><a href="sass.html">Sass</a></li>
+            <li><a href="badges.html">Components</a></li>
+            <!-- Dropdown Trigger -->
+            <li><a class="dropdown-button" href="#!" data-activates="dropdown1">Dropdown<i class="material-icons right">arrow_drop_down</i></a>
+            </li>
+        </ul>
     </div>
-    <!-- 右侧 -->
-    <div id="containerRight" class="split split-horizontal">
-        <!-- 代码部分 -->
-        <div id="containerRightCode" class="split split-horizontal">
-            <!-- panel -->
-            <div id="codePanel" style="width: 100%;height: 100%"></div>
-        </div>
-        <!-- 树部分 -->
-        <div id="containerRightTree" class="split split-horizontal">
-            <div id="tree"></div>
+</nav>
+
+<div id="layout" class="easyui-layout" data-options="fit:true" style="padding-bottom: 60px">
+    <%--<div data-options="region:'south',split:true" title="控制台" style="height:40%;"></div>--%>
+    <div data-options="region:'west',split:true" style="width:40%">
+        <div class="easyui-accordion" data-options="fit:true">
+            <div title="题目描述" data-options="iconCls:'icon-j-info'">
+            </div>
+            <div title="控制台" data-options="iconCls:'icon-j-console'">
+            </div>
         </div>
     </div>
+    <div data-options="region:'east',split:true,iconCls:'icon-j-project'" title="目录结构" style="width:20%">
 
+        <!-- 目录树 -->
+        <ul id="tree" class="easyui-tree"></ul>
+
+    </div>
+    <div data-options="region:'center'">
+
+        <div id="code" class="easyui-panel" title="编码区"
+             data-options="fit:true,iconCls:'icon-j-code',onResize:function(){resize();},tools:[{iconCls:'icon-j-run',handler:function(){clickRun()}}]">
+            <!-- 代码tab区 -->
+            <div id="tabs" class="easyui-tabs" data-options="fit:true"></div>
+        </div>
+
+    </div>
 </div>
 
 <script type="text/javascript">
-    // 初始化布局
-    Split(['#containerLeft', '#containerRight'], {
-        sizes: [30, 70]
-    });
+    function clickRun() {
+        alert('run');
+    }
 
-    Split(['#containerLeftUp', '#containerLeftDown'], {
-        direction: 'vertical'
-    });
+    function clickReset() {
+        alert('reset');
+    }
 
-    Split(['#containerRightCode', '#containerRightTree'], {
-        sizes: [70, 30],
-        minSize: 0
-    });
+    var data = [{
+        text: '项目名称',
+        iconCls:'icon-j-folder',
+        state: 'open',
+        children: [{
+            text: 'src',
+            iconCls: 'icon-j-src',
+            children: [
+                {
+                    text: 'Itheima.java',
+                    iconCls: 'icon-j-file',
+                    attributes: {
+                        type: 1,
+                        readOnly: false
+                    }
+                }, {
+                    text: 'Test.java',
+                    iconCls: 'icon-j-file',
+                    attributes: {
+                        type: 1,
+                        readOnly: false
+                    }
+                }
+            ]
+        }, {
+            text: 'jre1.8环境',
+            iconCls: 'icon-j-lib'
+        }, {
+            text: 'libs依赖',
+            iconCls: 'icon-j-lib',
+            state: 'closed',
+            children: [
+                {
+                    text: 'Gson-2.4.jar',
+                    iconCls: 'icon-j-jar'
+                }
+            ]
+        }]
+    }];
+
+    var structure = new ProjectStructure("tree", data, "tabs");
 
     function loadTree() {
         var url = "${pageContext.request.contextPath}/question/tree";
@@ -101,78 +133,8 @@
             "chapter": $.query.get("chapter"),
             "questionid": $.query.get("name")
         };
-        var callback = function (result) {
-
-            var title = result.title;
-            var src = result.src;
-
-            var tree = [
-                {
-                    text: title,
-                    expandIcon: "glyphicon glyphicon-file",
-                    state: {
-                        expanded: true
-                    },
-                    nodes: [
-                        {
-                            text: "src"
-                        }
-                    ]
-                }
-            ];
-
-            tree[0].nodes[0].nodes = [];
-            for (var i = 0; i < src.length; i++) {
-                var item = src[i];
-                tree[0].nodes[0].nodes[i] = {
-                    text: item.name,
-                    attributes: {
-                        type: 1,
-                        readOnly: item.readonly
-                    }
-                };
-            }
-
-            var codePanel = new CodePanel();
-            codePanel.layout($("#codePanel"));
-
-            $('#tree').treeview({
-                data: tree,
-                onNodeSelected: function (event, node) {
-                    var open = codePanel.openTab(node);
-                    if (!open) {
-                        if (node.state.expanded) {
-                            $('#tree').treeview('collapseNode', [node.nodeId, {silent: true, ignoreChildren: false}]);
-                        } else {
-                            $('#tree').treeview('expandNode', [node.nodeId, {silent: true, ignoreChildren: false}]);
-                        }
-                        $('#tree').treeview('toggleNodeSelected', [node.nodeId, {silent: true}]);
-                    }
-                }
-            });
-
-        }
-
-        $.post(url, data, callback, "json");
     }
 
-    function loadDesc() {
-        var url = "${pageContext.request.contextPath}/question/desc";
-        var data = {
-            "chapter": $.query.get("chapter"),
-            "questionid": $.query.get("name")
-        };
-        var callback = function (result) {
-            $("#containerLeftUp").html(result);
-        };
-
-        $.post(url, data, callback);
-    }
-
-    $(function () {
-        loadTree();
-        loadDesc();
-    })
 </script>
 
 

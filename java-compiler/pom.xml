@@ -30,5 +30,19 @@
             </plugin>
 
         </plugins>
+        <resources>
+            <!--加上以下resource, 才会加载java包下的properties配置文件, 否则Compiler初始化log时会异常-->
+            <resource>
+                <directory>${basedir}/src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.properties-template</include>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+            </resource>
+        </resources>
     </build>
 </project>

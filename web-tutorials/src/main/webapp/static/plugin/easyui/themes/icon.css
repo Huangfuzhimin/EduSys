@@ -94,3 +94,33 @@
 .icon-large-chart{
 	background:url('icons/large_chart.png') no-repeat center center;
 }
+.icon-j-code{
+	background:url('icons/j_codepart.png') no-repeat center center;
+}
+.icon-j-console{
+	background:url('icons/j_console.png') no-repeat center center;
+}
+.icon-j-file{
+	background:url('icons/j_file.png') no-repeat center center;
+}
+.icon-j-info{
+	background:url('icons/j_info.png') no-repeat center center;
+}
+.icon-j-jar{
+	background:url('icons/j_jar.png') no-repeat center center;
+}
+.icon-j-lib{
+	background:url('icons/j_lib.png') no-repeat center center;
+}
+.icon-j-src{
+	background:url('icons/j_src.png') no-repeat center center;
+}
+.icon-j-project{
+	background:url('icons/j_project.png') no-repeat center center;
+}
+.icon-j-folder{
+	background:url('icons/j_folder.png') no-repeat center center;
+}
+.icon-j-run{
+	background:url('icons/j_run.png') no-repeat center center;
+}

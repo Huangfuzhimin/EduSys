@@ -70,7 +70,7 @@
                     var url = "${pageContext.request.contextPath}/chapter/question" + arg;
 
                     list[i] = {
-                        name: item.name,
+                        name: item.title,
                         done: true,
                         url: url
                     }

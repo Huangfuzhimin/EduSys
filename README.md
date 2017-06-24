@@ -13,6 +13,10 @@
         redis.host=120.76.238.32
         redis.port=6379
 
+   同时不要忘了配置question.html答题页面订阅的redis地址
+
+        var redisURL = "http://120.76.238.32:7379/";
+
 3. 修改RunController.java的runService注解
 
         @Resource(name = "runServiceLocalImpl")   // 本地直接编译
@@ -28,6 +32,10 @@
 
         redis.host=127.0.0.1
         redis.port=6379
+
+   同时不要忘了配置question.html答题页面订阅的redis地址
+
+        var redisURL = "http://127.0.0.1:7379/";
 
 3. 修改RunController.java的runService注解
 

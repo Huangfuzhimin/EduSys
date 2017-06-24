@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -29,6 +30,9 @@ public class RunServiceLocalImpl implements RunService {
     Logger logger = LoggerFactory.getLogger(RunServiceLocalImpl.class);
     @Autowired
     RedisUtil redisUtil;
+
+    @Value("${kotlin.home}")
+    String kotlinHome;
 
     static Map<String, String> fileTypeMap = new HashMap<String, String>(){{
         put("java", "java");
@@ -143,6 +147,7 @@ public class RunServiceLocalImpl implements RunService {
     private Object[] compileSrc(String type, File src, File binDir) {
         Object[] result = new Object[2];
         if("kotlin".equals(type)){
+            KotlinCompiler.setKotlinHome(kotlinHome);
             result = KotlinCompiler.compile(binDir.getAbsolutePath(), new String[]{src.getAbsolutePath()});
             if((Integer)result[0] == 0) result[0] = 200;
         } else {
@@ -163,18 +168,6 @@ public class RunServiceLocalImpl implements RunService {
         return ItheimaJava;
     }
 
-//    @Override
-//    public String asyncRun(String username, String chapter, String questionid, String code) throws IOException {
-//        // 生成时间
-//        long currentTime = System.currentTimeMillis();
-//        // 异步执行
-//        async(username, chapter, questionid, code, currentTime);
-//
-//        // 返回缓存key (SHA1数字摘要)
-//        String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);
-//        System.out.println("asyncRun -> cacheKey: " + cacheKey);
-//        return ResponseUtils.success(cacheKey);
-//    }
 
     @Override
     public void async(String type, String username, String chapter, String questionid, String code, long currentTime) throws IOException {

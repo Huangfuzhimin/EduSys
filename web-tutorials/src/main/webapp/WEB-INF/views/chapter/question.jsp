@@ -30,10 +30,10 @@
     <script src="${pageContext.request.contextPath}/static/js/component-project.js" type="text/javascript"></script>
 
     <script>
-        String.prototype.format = function(){
+        String.prototype.format = function () {
             var args = arguments;
             return this.replace(/\{(\d+)\}/g,
-                function(m,i){
+                function (m, i) {
                     return args[i];
                 });
         }
@@ -90,13 +90,14 @@
 
 <script type="text/javascript">
     var structure = null;
-    var redisURL = "http://172.16.1.1:7379/";
+    var redisURL = "http://120.76.238.32:7379/";
 
     function loadTree() {
         var url = "${pageContext.request.contextPath}/question/tree";
         var data = {
             "chapter": $.query.get("chapter"),
-            "questionid": $.query.get("name")
+            "questionid": $.query.get("name"),
+            "type": $.query.get("type")
         };
         var callback = function (result) {
             structure = new ProjectStructure("tree", result, "tabs");
@@ -108,7 +109,8 @@
         var url = "${pageContext.request.contextPath}/desc";
         var data = {
             "chapter": $.query.get("chapter"),
-            "questionid": $.query.get("name")
+            "questionid": $.query.get("name"),
+            "type": $.query.get("type")
         };
         var callback = function (result) {
             $("#projectDesc").html(result);
@@ -132,6 +134,7 @@
             "chapter": $.query.get("chapter"),
             "username": username,
             "questionid": $.query.get("name"),
+            "type": $.query.get("type"),
             "code": code
         };
         console.log(data);
@@ -199,9 +202,10 @@
         var username = "aaa";
         var chapter = $.query.get("chapter");
         var questionid = $.query.get("name");
+        var type = $.query.get("type");
 
         // 订阅指定用户的指定题目
-        var channelKey = "{0}_{1}_{2}".format(username, chapter, questionid);
+        var channelKey = "{0}_{1}_{2}_{3}".format(type, username, chapter, questionid);
         subscribeChannel(channelKey);
     })
 </script>

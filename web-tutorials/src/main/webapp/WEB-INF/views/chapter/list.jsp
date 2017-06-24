@@ -55,6 +55,7 @@
     });
     function loadChapter() {
         var chapter = $.query.get("name");
+        var language = $.query.get("type");
 
         var url = "${pageContext.request.contextPath}/chapter";
         var data = {chapter: chapter};
@@ -66,7 +67,7 @@
                 for (var i = 0; i < datas.length; i++) {
                     var item = datas[i];
 
-                    var arg = "?chapter=" + chapter + "&name=" + item.name + "&title=" + item.title;
+                    var arg = "?chapter=" + chapter + "&name=" + item.name + "&title=" + item.title + "&type=" + language;
                     var url = "${pageContext.request.contextPath}/chapter/question" + arg;
 
                     list[i] = {

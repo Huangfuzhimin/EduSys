@@ -99,8 +99,8 @@
                     var item = datas[i];
                     var progress = Math.floor(item.current * 100 / item.total);
 
-                    var param = {"name": item.name, "type": language};
-                    var arg = "name=" + item.name + "&type=" + language;
+                    var param = {"name": item.name, "type": language.toLowerCase()};
+                    var arg = "name=" + item.name + "&type=" + language.toLowerCase();
                     var url = '${pageContext.request.contextPath}/chapter/list?' + arg;
                     list[i] = {
                         title: item.name,

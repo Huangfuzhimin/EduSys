@@ -16,6 +16,12 @@ import java.util.List;
  */
 public class KotlinCompiler {
 
+    private static String kotlinHome;
+
+    public static void setKotlinHome(String kotlinHome){
+        KotlinCompiler.kotlinHome = kotlinHome;
+    }
+
     public static Object[] compile(String outDir, String... ktFiles) {
 
         File classOutDir = new File(outDir);
@@ -32,8 +38,10 @@ public class KotlinCompiler {
 //        commands.add("-include-runtime");
         commands.add("-nowarn");
 //        commands.add("-classpath");
-        commands.add("-kotlin-home");
-        commands.add("G:\\JetBrains\\ideaIU-2017.1.4.win\\plugins\\Kotlin\\kotlinc");
+        if(kotlinHome != null && !"".equals(kotlinHome)){
+            commands.add("-kotlin-home");
+            commands.add(kotlinHome);
+        }
 
         commands.add("-d");
         commands.add(new File(outDir, "Itheima.jar").getAbsolutePath());
@@ -62,6 +70,7 @@ public class KotlinCompiler {
     }
 
     public static void main(String[] args){
+        KotlinCompiler.setKotlinHome("G:/JetBrains/ideaIU-2017.1.4.win/plugins/Kotlin/kotlinc");
         Object[] result = KotlinCompiler.compile("G:\\JetBrains\\ideaIU-2017.1.4.win\\plugins\\Kotlin\\kotlinc\\bin\\out",
                 new String[]{"G:\\JetBrains\\ideaIU-2017.1.4.win\\plugins\\Kotlin\\kotlinc\\bin\\Itheima.kt"});
 

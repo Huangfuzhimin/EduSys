@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -29,6 +30,9 @@ public class RunServiceLocalImpl implements RunService {
     Logger logger = LoggerFactory.getLogger(RunServiceLocalImpl.class);
     @Autowired
     RedisUtil redisUtil;
+
+    @Value("${kotlin.home}")
+    String kotlinHome;
 
     static Map<String, String> fileTypeMap = new HashMap<String, String>(){{
         put("java", "java");
@@ -63,7 +67,7 @@ public class RunServiceLocalImpl implements RunService {
 
         // 3. 创建测试命令
         String command = generateCommand(type, binDir, reportDir, questionDir);
-        System.out.println("command:" + command);
+//        System.out.println("command:" + command);
 
         // 4. 测试class, 把结果放到report目录  E:\cms\newstrap\result\vvv\minCat\1496717064235\report\test.html
         boolean compileSuccess = (Integer) compileResult[0] == 200;
@@ -97,13 +101,16 @@ public class RunServiceLocalImpl implements RunService {
         return responseStr;
     }
 
+
+
     private String generateCommand(String type, File binDir, File reportDir, File questionDir) {
         if("kotlin".equals(type)){
             return Commander.kotlin("TestMain")
                     .args(new String[]{reportDir.getAbsolutePath()})   // 报表输出路径
                     .classpath(questionDir.getAbsolutePath())          // 题库根目录
                     .classpath(binDir.getAbsolutePath() + File.separator + "Itheima.jar")               // 编译结果目录
-                    .extDir(questionDir.getAbsolutePath() + File.separator + "libs")   // 依赖库目录
+                    .extDir(questionDir.getAbsolutePath() + File.separator + "libs")   // TestNG依赖库目录
+                    .extDir(PathUtil.rootDir() + "kotlin" + File.separator + "libs")   // Kotlin依赖库目录
                     .create();
         }
 
@@ -140,6 +147,7 @@ public class RunServiceLocalImpl implements RunService {
     private Object[] compileSrc(String type, File src, File binDir) {
         Object[] result = new Object[2];
         if("kotlin".equals(type)){
+            KotlinCompiler.setKotlinHome(kotlinHome);
             result = KotlinCompiler.compile(binDir.getAbsolutePath(), new String[]{src.getAbsolutePath()});
             if((Integer)result[0] == 0) result[0] = 200;
         } else {
@@ -160,18 +168,6 @@ public class RunServiceLocalImpl implements RunService {
         return ItheimaJava;
     }
 
-//    @Override
-//    public String asyncRun(String username, String chapter, String questionid, String code) throws IOException {
-//        // 生成时间
-//        long currentTime = System.currentTimeMillis();
-//        // 异步执行
-//        async(username, chapter, questionid, code, currentTime);
-//
-//        // 返回缓存key (SHA1数字摘要)
-//        String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);
-//        System.out.println("asyncRun -> cacheKey: " + cacheKey);
-//        return ResponseUtils.success(cacheKey);
-//    }
 
     @Override
     public void async(String type, String username, String chapter, String questionid, String code, long currentTime) throws IOException {

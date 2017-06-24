@@ -1,7 +1,11 @@
 package org.itheima.edu.tutorials.web.service.impl;
 
 import org.itheima.edu.jcompiler.JCompilerUtils;
-import org.itheima.edu.tutorials.utils.*;
+import org.itheima.edu.kcompiler.KotlinCompiler;
+import org.itheima.edu.tutorials.utils.JsonUtils;
+import org.itheima.edu.tutorials.utils.PathUtil;
+import org.itheima.edu.tutorials.utils.RedisUtil;
+import org.itheima.edu.tutorials.utils.StreamUtils;
 import org.itheima.edu.tutorials.utils.cmd.Commander;
 import org.itheima.edu.tutorials.web.ResponseCode;
 import org.itheima.edu.tutorials.web.ResponseUtils;
@@ -10,14 +14,11 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Poplar on 2017/6/16.
@@ -29,18 +30,17 @@ public class RunServiceLocalImpl implements RunService {
     @Autowired
     RedisUtil redisUtil;
 
+    static Map<String, String> fileTypeMap = new HashMap<String, String>(){{
+        put("java", "java");
+        put("kotlin", "kt");
+    }};
 
     @Override
-    public String run(String username, String chapter, String questionid, String code) throws IOException {
-        return run(username, chapter, questionid, code, System.currentTimeMillis());
+    public String run(String type, String username, String chapter, String questionid, String code) throws IOException {
+        return run(type, username, chapter, questionid, code, System.currentTimeMillis());
     }
 
-    @Override
-    public String asyncRun(String username, String chapter, String questionid, String code) throws IOException {
-        return null;
-    }
-
-    public String run(String username, String chapter, String questionid, String code, long currentTime) throws IOException {
+    public String run(String type, String username, String chapter, String questionid, String code, long currentTime) throws IOException {
 
         // /root/newstrap/result/aaa/Array-1/lucky13/865757798789/src
         // /root/newstrap/result/aaa/Array-1/lucky13/865757798789/bin
@@ -52,34 +52,29 @@ public class RunServiceLocalImpl implements RunService {
         File reportDir = runDir.getChildDir("report");
         File questionDir = PathUtil.questionDir(chapter, questionid);
 //        String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);
-        String cacheKey = String.format("%s_%s_%s", username, chapter, questionid);
+        String cacheKey = String.format("%s_%s_%s_%s", type, username, chapter, questionid);
         logger.info("cacheKey: " + cacheKey + " reportDir: " + reportDir.getAbsolutePath());
 
         // 1. 写出src到文件
-        File ItheimaJava = writeSrc(code, srcDir);
+        File srcFile = writeSrc(type, code, srcDir);
 
         // 2. 生成class到bin目录
-        JCompilerUtils.Result result = compileSrc(ItheimaJava, binDir);
+        Object[] compileResult = compileSrc(type, srcFile, binDir);
 
-        String command = Commander.java("TestMain")
-                .args(new String[]{reportDir.getAbsolutePath()})   // 报表输出路径
-                .classpath(questionDir.getAbsolutePath())          // 题库根目录
-                .classpath(binDir.getAbsolutePath())               // 编译结果目录
-                .extDir(questionDir.getAbsolutePath() + File.separator + "libs")   // 依赖库目录
-                .create();
+        // 3. 创建测试命令
+        String command = generateCommand(type, binDir, reportDir, questionDir);
+        System.out.println("command:" + command);
 
-        // 3. 测试class, 把结果放到report目录  E:\cms\newstrap\result\vvv\minCat\1496717064235\report\test.html
-        boolean isSuccess;
-        if (result.code == 200) {
-            isSuccess = runTest(command);
-        } else {
-            isSuccess = false;
+        // 4. 测试class, 把结果放到report目录  E:\cms\newstrap\result\vvv\minCat\1496717064235\report\test.html
+        boolean compileSuccess = (Integer) compileResult[0] == 200;
+        boolean testResult = false;
+        if (compileSuccess) {
+            testResult = runTest(command);
         }
-
 
         // 4. 得到测试结果, 返回并将成功信息写入缓存
         String responseStr;
-        if (isSuccess) {
+        if (compileSuccess) { // 编译成功
             HashMap<String, Object> map = new HashMap<>();
             map.put("username", username);
             map.put("chapter", chapter);
@@ -91,14 +86,33 @@ public class RunServiceLocalImpl implements RunService {
             redisUtil.setCacheObject(cacheKey, ResponseUtils.success(0, reportDir.getAbsolutePath()));
             redisUtil.publish(cacheKey, ResponseUtils.success(0, reportDir.getAbsolutePath()));
         } else {
-            responseStr = JsonUtils.toWrapperJson(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message);
-
-            redisUtil.setCacheObject(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message));
-            redisUtil.publish(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message));
+            String errorMsg = (String) compileResult[1];
+            errorMsg = "编译出错: " + errorMsg;
+            responseStr = JsonUtils.toWrapperJson(ResponseCode.ExamError.RUN_EXEC_FAILD, errorMsg);
+            redisUtil.setCacheObject(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, errorMsg));
+            redisUtil.publish(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, errorMsg));
         }
         System.out.println("写出完毕->" + cacheKey);
 
         return responseStr;
+    }
+
+    private String generateCommand(String type, File binDir, File reportDir, File questionDir) {
+        if("kotlin".equals(type)){
+            return Commander.kotlin("TestMain")
+                    .args(new String[]{reportDir.getAbsolutePath()})   // 报表输出路径
+                    .classpath(questionDir.getAbsolutePath())          // 题库根目录
+                    .classpath(binDir.getAbsolutePath() + File.separator + "Itheima.jar")               // 编译结果目录
+                    .extDir(questionDir.getAbsolutePath() + File.separator + "libs")   // 依赖库目录
+                    .create();
+        }
+
+        return Commander.java("TestMain")
+                    .args(new String[]{reportDir.getAbsolutePath()})   // 报表输出路径
+                    .classpath(questionDir.getAbsolutePath())          // 题库根目录
+                    .classpath(binDir.getAbsolutePath())               // 编译结果目录
+                    .extDir(questionDir.getAbsolutePath() + File.separator + "libs")   // 依赖库目录
+                    .create();
     }
 
     private boolean runTest(String command) throws IOException {
@@ -106,7 +120,7 @@ public class RunServiceLocalImpl implements RunService {
         Process p = Runtime.getRuntime().exec(command);
         try {
             String parseCmdStream = StreamUtils.parseCmdStream(p.getInputStream());
-//            System.out.println(parseCmdStream);
+            System.out.println(parseCmdStream);
             p.waitFor();
             return true;
         } catch (InterruptedException e) {
@@ -115,14 +129,31 @@ public class RunServiceLocalImpl implements RunService {
         }
     }
 
+    /**
+     * 编译源码
+     * @param type
+     * @param src
+     * @param binDir
+     * @return
+     */
     @NotNull
-    private JCompilerUtils.Result compileSrc(File itheimaJava, File binDir) {
-        return JCompilerUtils.doMagic(binDir.getAbsolutePath(), new String[]{itheimaJava.getAbsolutePath()});
+    private Object[] compileSrc(String type, File src, File binDir) {
+        Object[] result = new Object[2];
+        if("kotlin".equals(type)){
+            result = KotlinCompiler.compile(binDir.getAbsolutePath(), new String[]{src.getAbsolutePath()});
+            if((Integer)result[0] == 0) result[0] = 200;
+        } else {
+            result = JCompilerUtils.doMagic(binDir.getAbsolutePath(), new String[]{src.getAbsolutePath()});
+        }
+        return result;
     }
 
     @NotNull
-    private File writeSrc(String code, File srcDir) throws IOException {
-        File ItheimaJava = new File(srcDir, "Itheima.java");
+    private File writeSrc(String type, String code, File srcDir) throws IOException {
+
+        String postFix = fileTypeMap.get(type);
+
+        File ItheimaJava = new File(srcDir, "Itheima." + postFix);
         FileOutputStream fos = new FileOutputStream(ItheimaJava);
         fos.write(code.getBytes("utf-8"));
         StreamUtils.closeIO(fos);
@@ -143,7 +174,7 @@ public class RunServiceLocalImpl implements RunService {
 //    }
 
     @Override
-    public void async(String username, String chapter, String questionid, String code, long currentTime) throws IOException {
-        run(username, chapter, questionid, code, currentTime);
+    public void async(String type, String username, String chapter, String questionid, String code, long currentTime) throws IOException {
+        run(type, username, chapter, questionid, code, currentTime);
     }
 }

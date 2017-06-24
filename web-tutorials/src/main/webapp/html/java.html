@@ -26,10 +26,10 @@
 	<div class=tabc style="margin-top: 20px;">
 		<nav>
 			<ul>
-				<li class="h2" id="selected">
+				<li class="h2" id="selected" value="java">
 					<a href="/html/java.html/">Java</a>
 				</li>
-				<li class="h2">
+				<li class="h2" value="kotlin">
 					<a href="/html/kotlin.html/">Kotlin</a>
 				</li>
 			</ul>
@@ -85,11 +85,12 @@
 //					console.log(ele.name + "_c:" + ele.current + " t:" + ele.total + " P:" + progress);
 					
 					// 添加标题
-					var type = $("nav .h2[id='selected'] a").text();
-					var param = {"name":ele.name, "type":type};
-					var arg = urlEncode(param);
+					var type = $("nav .h2[id='selected']").attr("value");
+//					var param = {"chapterName":ele.name, "type":type};
+//					var arg = urlEncode(param);
+                    var arg = "?chapterName="+ele.name+"&type="+type;
 
-					var str="<a href='/html/chapter_detail.html?"+arg+"'>"+
+					var str="<a href='/html/chapter_detail.html"+arg+"'>"+
 								"<span class=h2>"+ele.name+"</span>"+
 							"</a> "+ele.current+"/"+ele.total+"<br>";
 					// 或单独添加点击事件

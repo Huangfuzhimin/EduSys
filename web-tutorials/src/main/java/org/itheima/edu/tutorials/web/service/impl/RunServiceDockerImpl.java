@@ -151,16 +151,12 @@ public class RunServiceDockerImpl implements RunService{
 
 
     @Override
-    public String run(String username, String chapter, String questionid, String code) throws IOException {
-        return run(username, chapter, questionid, code, System.currentTimeMillis());
+    public String run(String type, String username, String chapter, String questionid, String code) throws IOException {
+        return run(type, username, chapter, questionid, code, System.currentTimeMillis());
     }
 
-    @Override
-    public String asyncRun(String username, String chapter, String questionid, String code) throws IOException {
-        return null;
-    }
 
-    public String run(String username, String chapter, String questionid, String code, long currentTime) throws IOException {
+    public String run(String type, String username, String chapter, String questionid, String code, long currentTime) throws IOException {
 
         // /root/newstrap/result/aaa/Array-1/lucky13/865757798789/src
         // /root/newstrap/result/aaa/Array-1/lucky13/865757798789/bin
@@ -172,14 +168,14 @@ public class RunServiceDockerImpl implements RunService{
         File reportDir = runDir.getChildDir("report");
         File questionDir = PathUtil.questionDir(chapter, questionid);
 //        String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);
-        String cacheKey = String.format("%s_%s_%s", username, chapter, questionid);
+        String cacheKey = String.format("%s_%s_%s_%s", type, username, chapter, questionid);
         logger.info("cacheKey: " + cacheKey + " reportDir: " + reportDir.getAbsolutePath());
 
         // 1. 写出src到文件
         File ItheimaJava = writeSrc(code, srcDir);
 
         // 2. 生成class到bin目录
-        JCompilerUtils.Result result = compileSrc(ItheimaJava, binDir);
+        Object[] result = compileSrc(ItheimaJava, binDir);
 
         String[] command = Commander.java("TestMain")
                 .args(new String[]{reportDir.getAbsolutePath()})   // 报表输出路径
@@ -194,7 +190,7 @@ public class RunServiceDockerImpl implements RunService{
 
         // 3. 测试class, 把结果放到report目录  E:\cms\newstrap\result\vvv\minCat\1496717064235\report\test.html
         boolean isSuccess;
-        if (result.code == 200) {
+        if ((Integer)result[0] == 200) {
             isSuccess = runDocker(command, reportDir.getAbsolutePath());
 //            isSuccess = runTest(command);
         } else {
@@ -203,7 +199,7 @@ public class RunServiceDockerImpl implements RunService{
 
 
         // 4. 得到测试结果, 返回并将成功信息写入缓存
-        String responseStr;
+        String responseStr = null;
         if (isSuccess) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("username", username);
@@ -216,10 +212,10 @@ public class RunServiceDockerImpl implements RunService{
             redisUtil.setCacheObject(cacheKey, ResponseUtils.success(0, reportDir.getAbsolutePath()));
             redisUtil.publish(cacheKey, ResponseUtils.success(0, reportDir.getAbsolutePath()));
         } else {
-            responseStr = JsonUtils.toWrapperJson(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message);
-
-            redisUtil.setCacheObject(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message));
-            redisUtil.publish(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message));
+//            responseStr = JsonUtils.toWrapperJson(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message);
+//
+//            redisUtil.setCacheObject(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message));
+//            redisUtil.publish(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message));
         }
         System.out.println("写出完毕->" + cacheKey);
 
@@ -241,7 +237,7 @@ public class RunServiceDockerImpl implements RunService{
     }
 
     @NotNull
-    private JCompilerUtils.Result compileSrc(File itheimaJava, File binDir) {
+    private Object[] compileSrc(File itheimaJava, File binDir) {
         return JCompilerUtils.doMagic(binDir.getAbsolutePath(), new String[]{itheimaJava.getAbsolutePath()});
     }
 
@@ -268,7 +264,7 @@ public class RunServiceDockerImpl implements RunService{
 //    }
 
     @Override
-    public void async(String username, String chapter, String questionid, String code, long currentTime) throws IOException {
-        run(username, chapter, questionid, code, currentTime);
+    public void async(String type, String username, String chapter, String questionid, String code, long currentTime) throws IOException {
+        run(type, username, chapter, questionid, code, currentTime);
     }
 }

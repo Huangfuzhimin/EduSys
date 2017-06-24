@@ -24,8 +24,8 @@ import java.text.SimpleDateFormat;
 @RequestMapping(produces = "application/json;charset=UTF-8")
 public class RunController {
 
-    @Resource(name = "runServiceDockerImpl")    // docker编译
-//    @Resource(name = "runServiceLocalImpl")   // 本地直接编译
+//    @Resource(name = "runServiceDockerImpl")    // docker编译
+    @Resource(name = "runServiceLocalImpl")   // 本地直接编译
     RunService runService;
 
     // 运行指定题目代码
@@ -36,6 +36,7 @@ public class RunController {
         try {
 //            String resStr = executeRequest(req, resp);
             resp.setContentType("text/html;charset=UTF-8");
+            String type = req.getParameter("type");
             String username = req.getParameter("username");
             String chapter = req.getParameter("chapter");
             String questionid = req.getParameter("questionid");
@@ -47,12 +48,12 @@ public class RunController {
             long currentTime = System.currentTimeMillis();
             // 返回缓存key (SHA1数字摘要)
 //            String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);
-            String cacheKey = username + "_" + chapter + "_" + questionid;
+            String cacheKey = type + "_"+ username + "_" + chapter + "_" + questionid;
             System.out.println("asyncRun -> cacheKey: " + cacheKey);
             ResponseUtils.outputJson(resp, ResponseUtils.success(cacheKey));
 
             // 异步执行
-            runService.async(username, chapter, questionid, code, currentTime);
+            runService.async(type, username, chapter, questionid, code, currentTime);
 
         } catch (IOException e) {
             ResponseUtils.error(100, "运行错误", resp);
@@ -103,7 +104,7 @@ public class RunController {
         // 生成时间
         long currentTime = System.currentTimeMillis();
         // 异步执行
-        runService.async(username, chapter, questionid, code, currentTime);
+//        runService.async(type, username, chapter, questionid, code, currentTime);
 
         // 返回缓存key (SHA1数字摘要)
         String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);

@@ -36,7 +36,7 @@
 		<div class=tabc style="margin-top: 20px;">
 			<nav>
 				<ul>
-					<li class="h2" id="selected">
+					<li class="h2">
 						<a href="/html/java.html/">Java</a>
 					</li>
 					<li class="h2">
@@ -107,7 +107,7 @@
 //							</td>
 //						</tr>
 						var str = "<img src='/images/c1.jpg'/>"
-						var arg = "?chapter="+chapterName+"&name="+ele.name+"&title="+ele.title
+						var arg = "?type="+type+"&chapter="+chapterName+"&questionid="+ele.name+"&title="+ele.title
 						str += "<a href='question.html"+arg+"'>"+ele.title+"</a>"
 
 						var td = $("<td width=250 class='td-item'>&nbsp;" + str + "</td>")
@@ -136,14 +136,19 @@
 				var arr = tags.toArray();
 				for (var i = 0; i < arr.length; i++) {
 					var li = $(arr[i]);
-					li.parent().attr("id", (li.text() == type) ? "selected" : "");
+					if(li.text().toLowerCase() === type){
+                        li.parent().attr("id", "selected");
+					}else {
+                        li.parent().removeAttr("id");
+					}
 				}
 			}
 
 			var chapterName = "";
+			var type = "";
 			$(function() {
-				chapterName = $.query.get("name");
-				var type = $.query.get("type");
+				chapterName = $.query.get("chapterName");
+				type = $.query.get("type");
 				if(!chapterName) chapterName = "Array-1";
 
 				$("#current_chapter").html(chapterName);

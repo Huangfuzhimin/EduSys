@@ -9,7 +9,7 @@ import java.io.StringWriter;
  */
 public class JCompilerUtils {
 
-    public static Result doMagic(String outDir, String[] javaFiles) {
+    public static Object[] doMagic(String outDir, String[] javaFiles) {
         StringWriter out = new StringWriter();
         File classOutDir = new File(outDir);
         if (!(classOutDir.exists())) {
@@ -22,10 +22,10 @@ public class JCompilerUtils {
 
         boolean compile = JavaCompiler.compile(writer, destDir, javaFiles);
         if (compile) {
-            return new Result(200, "ok");
+            return new Object[]{200, "ok"};
         }
 
-        return new Result(404, out.toString());
+        return new Object[]{404, out.toString()};
     }
 
     public static class Result {

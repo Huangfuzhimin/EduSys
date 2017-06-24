@@ -10,10 +10,8 @@ import java.io.IOException;
  */
 public interface RunService {
 
-    String run(String username, String chapter, String questionid, String code) throws IOException;
-
-    String asyncRun(String username, String chapter, String questionid, String code) throws IOException;
+    String run(String type, String username, String chapter, String questionid, String code) throws IOException;
 
     @Async
-    void async(String username, String chapter, String questionid, String code, long currentTime) throws IOException;
+    void async(String type, String username, String chapter, String questionid, String code, long currentTime) throws IOException;
 }

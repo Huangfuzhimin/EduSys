@@ -130,7 +130,7 @@ public class Itheima{
                 );
             }
             var timerId = null;//定时器ID
-            var redisURL = "http://172.16.1.1:7379/";
+            var redisURL = "http://120.76.238.32:7379/";
             var tryCount = 0;
             // 处理异步请求结果
             function intervalGet(key) {
@@ -260,6 +260,7 @@ public class Itheima{
 					var code = javaEditor.getValue();
 
 					var arg = {
+						"type": type,
 						"chapter": chapter,
 						"username": username,
 						"questionid": questionid,
@@ -296,13 +297,15 @@ public class Itheima{
 				);
 			}
 
+			var type = "";
             var username = "aaa";
 			var chapter = "";
 			var questionid = "";
 			$(document).ready(function() {
 
 				bindEvent();
-				
+
+                type = $.query.get("type");
 				chapter = $.query.get("chapter");
 				questionid = $.query.get("questionid");
 				var title = $.query.get("title");
@@ -316,7 +319,7 @@ public class Itheima{
 				initQuestion();
 
 				// 订阅指定用户的指定题目
-				var channelKey = "{0}_{1}_{2}".format(username, chapter, questionid);
+				var channelKey = "{0}_{1}_{2}_{3}".format(type, username, chapter, questionid);
 				subscribeChannel(channelKey);
 
 			})

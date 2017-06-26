@@ -100,7 +100,7 @@
             "type": $.query.get("type")
         };
         var callback = function (result) {
-            structure = new ProjectStructure("tree", result, "tabs");
+            structure = new ProjectStructure("tree", result, "tabs",$.query.get("type"));
         };
         $.post(url, data, callback, 'json');
     }

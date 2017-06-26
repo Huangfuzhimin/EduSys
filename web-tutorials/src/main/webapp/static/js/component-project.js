@@ -1,8 +1,9 @@
-function ProjectStructure(id, data, tabsId) {
+function ProjectStructure(id, data, tabsId,language) {
     // ########### 属性区 ##################
-    this.id = id;
+    this.id = id;//层级树容器id
     this.data = data;
-    this.tabsId = tabsId;
+    this.tabsId = tabsId;//代码区容器id
+    this.language = language;//编程语言
     this.map = new Map();
     var self = this;
 
@@ -120,7 +121,7 @@ function ProjectStructure(id, data, tabsId) {
     function createEditor(editorId) {
         var editor = ace.edit(editorId);
         editor.setTheme("ace/theme/chrome");
-        editor.getSession().setMode("ace/mode/java");
+        editor.getSession().setMode("ace/mode/" + self.language);
         editor.setFontSize(18);
 
         //去掉保存快捷键

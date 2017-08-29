@@ -7,6 +7,7 @@ import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.*;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.util.TextUtils;
 import org.itheima.edu.jcompiler.JCompilerUtils;
 import org.itheima.edu.tutorials.utils.JsonUtils;
 import org.itheima.edu.tutorials.utils.PathUtil;
@@ -25,15 +26,13 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by Poplar on 2017/6/16.
@@ -46,6 +45,9 @@ public class RunServiceDockerImpl implements RunService{
 
     @Value("${docker.uri}")
     String docker_uri;
+
+    @Value("${docker.image}")
+    String docker_image;
 
     private DockerClient docker;
 
@@ -61,7 +63,13 @@ public class RunServiceDockerImpl implements RunService{
 
     public void init() throws ServletException {
         try {
-            docker = DefaultDockerClient.fromEnv().uri(docker_uri).build();
+            DefaultDockerClient.Builder builder = DefaultDockerClient
+                    .fromEnv();
+            if(!TextUtils.isEmpty(docker_uri)){
+                builder.uri(docker_uri);
+            }
+
+            docker = builder.build();
         } catch (DockerCertificateException e) {
             e.printStackTrace();
         }
@@ -82,7 +90,7 @@ public class RunServiceDockerImpl implements RunService{
                     .build();
             // Create container with exposed ports
             final ContainerConfig containerConfig = ContainerConfig.builder().hostConfig(hostConfig)
-                    .image("hub.c.163.com/library/java:8").tty(true).attachStderr(true).attachStdin(true)
+                    .image(docker_image).tty(true).attachStderr(true).attachStdin(true)
                     .attachStdout(true).build();
 
             final ContainerCreation creation = docker.createContainer(containerConfig);
@@ -212,10 +220,9 @@ public class RunServiceDockerImpl implements RunService{
             redisUtil.setCacheObject(cacheKey, ResponseUtils.success(0, reportDir.getAbsolutePath()));
             redisUtil.publish(cacheKey, ResponseUtils.success(0, reportDir.getAbsolutePath()));
         } else {
-//            responseStr = JsonUtils.toWrapperJson(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message);
-//
-//            redisUtil.setCacheObject(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message));
-//            redisUtil.publish(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, result.message));
+            responseStr = JsonUtils.toWrapperJson(ResponseCode.ExamError.RUN_EXEC_FAILD, result[1]);
+            redisUtil.setCacheObject(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, (String) result[1]));
+            redisUtil.publish(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, (String) result[1]));
         }
         System.out.println("写出完毕->" + cacheKey);
 

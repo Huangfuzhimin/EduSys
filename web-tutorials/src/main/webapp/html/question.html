@@ -153,6 +153,7 @@ public class Itheima{
              * @param channelKey
              */
             function subscribeChannel(channelKey) {
+                cacheKey = channelKey;
                 function checkData() {
                     if(xhr.readyState === 3)  {
                         console.log("xhr.return " + channelKey);
@@ -265,7 +266,8 @@ public class Itheima{
 						"chapter": chapter,
 						"username": username,
 						"questionid": questionid,
-						"code": code
+						"code": code,
+						"cacheKey":cacheKey
 					};
 //					console.log(JSON.stringify(arg))
 
@@ -283,23 +285,30 @@ public class Itheima{
 					$.post("/run", arg, submitSuccess)
 				});
 			}
-			
+
+			var cacheKey = "";
 			function initQuestion () {
 
                 // 获取题目描述
 				$.get("/desc",
 					{
+					    "username":username,
 						"chapter": chapter,
 						"questionid": questionid
 					}, 
-					function(result) {
-						$("#questiondesc").html(result);
+					function(data) {
+				    	var json = JSON.parse(data);
+                        // 订阅指定用户的指定题目
+                        subscribeChannel(json.cacheKey);
+
+						$("#questiondesc").html(json.result);
 					}
 				);
+
 			}
 
 			var type = "";
-            var username = "aaa";
+            var username = "test";
 			var chapter = "";
 			var questionid = "";
 			$(document).ready(function() {
@@ -319,9 +328,6 @@ public class Itheima{
 //				console.log(chapter+"_"+questionid);
 				initQuestion();
 
-				// 订阅指定用户的指定题目
-				var channelKey = "{0}_{1}_{2}_{3}".format(type, username, chapter, questionid);
-				subscribeChannel(channelKey);
 
 			})
 		</script>

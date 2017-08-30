@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -69,12 +70,20 @@ public class MainController {
     @RequestMapping(value = "/desc")
     public void getQuestionDesc(HttpServletRequest request, HttpServletResponse response) {
 //        LogUtils.printRequest(request);
+        String username = request.getParameter("username");
         String chapter = request.getParameter("chapter");
         String questionid = request.getParameter("questionid");
 
+        String cacheKey = String.format("%s_%s_%s_%s", username, chapter, questionid, UUID.randomUUID());
+
         String result = mainService.getQuestionDesc(chapter, questionid);
         try {
-            response.getOutputStream().write(result.getBytes("utf-8"));
+            HashMap<String, String> map = new HashMap<String, String>();
+            map.put("result", result);
+            map.put("cacheKey", cacheKey);
+            String json = JsonUtils.toJson(map);
+
+            response.getOutputStream().write(json.getBytes("utf-8"));
         } catch (IOException e) {
             e.printStackTrace();
         }

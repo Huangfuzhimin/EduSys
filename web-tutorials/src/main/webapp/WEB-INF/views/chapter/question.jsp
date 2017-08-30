@@ -108,17 +108,23 @@
     function loadDesc() {
         var url = "${pageContext.request.contextPath}/desc";
         var data = {
+            "username": username,
             "chapter": $.query.get("chapter"),
             "questionid": $.query.get("name"),
             "type": $.query.get("type")
         };
-        var callback = function (result) {
-            $("#projectDesc").html(result);
+        var callback = function (data) {
+            var json = JSON.parse(data);
+            $("#projectDesc").html(json.result);
+
+            // 订阅指定用户的指定题目
+            subscribeChannel(json.cacheKey);
         };
 
         $.post(url, data, callback);
     }
 
+    var username = "test";
     function clickRun() {
         if (structure == null) {
             return;
@@ -128,14 +134,14 @@
         var codes = structure.getCodes();
         var code = codes[0].content;//临时使用
 
-        var username = "aaa";
 
         var data = {
             "chapter": $.query.get("chapter"),
             "username": username,
             "questionid": $.query.get("name"),
             "type": $.query.get("type"),
-            "code": code
+            "code": code,
+            "cacheKey": cacheKey
         };
         console.log(data);
         var url = "${pageContext.request.contextPath}/run";
@@ -149,7 +155,9 @@
         alert('reset');
     }
 
+    var cacheKey = "";
     function subscribeChannel(channelKey) {
+        cacheKey = channelKey;
         function checkData() {
             if (xhr.readyState === 3) {
                 var response = xhr.responseText;
@@ -204,9 +212,8 @@
         var questionid = $.query.get("name");
         var type = $.query.get("type");
 
-        // 订阅指定用户的指定题目
-        var channelKey = "{0}_{1}_{2}_{3}".format(type, username, chapter, questionid);
-        subscribeChannel(channelKey);
+        $(".brand-logo").text($.query.get("title"))
+
     })
 </script>
 

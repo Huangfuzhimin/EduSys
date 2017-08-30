@@ -3,6 +3,7 @@ import redis.clients.jedis.Jedis;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
 
 /**
  * Created by Poplar on 2017/6/17.
@@ -12,6 +13,12 @@ public class Test {
     public static void main(String[] args){
 //        jedisTest();
 
+//        jsonTest();
+
+        System.out.println(UUID.randomUUID());
+    }
+
+    private static void jsonTest() {
         HashMap<String, Object> map = new HashMap<>();
         ArrayList<Object> value = new ArrayList<>();
         value.add("123456");

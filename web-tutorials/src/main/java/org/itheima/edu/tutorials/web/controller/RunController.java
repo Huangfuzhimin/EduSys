@@ -41,6 +41,7 @@ public class RunController {
             String chapter = req.getParameter("chapter");
             String questionid = req.getParameter("questionid");
             String code = req.getParameter("code");
+            String cacheKey = req.getParameter("cacheKey");
 
 //        return runService.asyncRun(username, chapter, questionid, code);
 
@@ -48,12 +49,12 @@ public class RunController {
             long currentTime = System.currentTimeMillis();
             // 返回缓存key (SHA1数字摘要)
 //            String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);
-            String cacheKey = type + "_"+ username + "_" + chapter + "_" + questionid;
+//            String cacheKey = String.format("%s_%s_%s_%s_%s", type, username, chapter, questionid);
             System.out.println("asyncRun -> cacheKey: " + cacheKey);
             ResponseUtils.outputJson(resp, ResponseUtils.success(cacheKey));
 
             // 异步执行
-            runService.async(type, username, chapter, questionid, code, currentTime);
+            runService.async(type, username, chapter, questionid, code, cacheKey, currentTime);
 
         } catch (IOException e) {
             ResponseUtils.error(100, "运行错误", resp);

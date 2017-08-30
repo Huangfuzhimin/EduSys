@@ -16,7 +16,7 @@ public class JavaCmd {
     private Set<String> extDirs = new HashSet<>();
     private Set<String> classpath = new HashSet<>();
     private String encoding = "UTF-8";
-    private String separator = ";";     // 参数分隔符, win为; linux为:
+    private String separator = ":";     // 参数分隔符, win为; linux为:
 
     public JavaCmd(String main) {
         this.classMain = main;
@@ -57,6 +57,9 @@ public class JavaCmd {
     }
 
     public String[] createArr() {
+//        java -Dfile.encoding=UTF-8 -Djava.ext.dirs=/root/newstrap/exam/String-1/twoChar/libs
+//                -cp .:/root/newstrap/exam/String-1/twoChar:/root/newstrap/result/aaa/String-1/twoChar/1504062448165/bin
+//        TestMain /root/newstrap/result/aaa/String-1/twoChar/1504062448165/report
 
 //        java -Dfile.encoding=UTF-8 -Djava.ext.dirs=E:\cms\newstrap\exam\Array-1\firstLast6\libs
 //                -cp .:E:\cms\newstrap\exam\Array-1\firstLast6:E:\cms\newstrap\result\aaa\Array-1\firstLast6\1497945848954\bin

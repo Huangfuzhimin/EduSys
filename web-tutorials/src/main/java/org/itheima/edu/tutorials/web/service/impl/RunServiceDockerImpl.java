@@ -8,29 +8,12 @@ import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.util.TextUtils;
-import org.itheima.edu.jcompiler.JCompilerUtils;
-import org.itheima.edu.tutorials.utils.JsonUtils;
-import org.itheima.edu.tutorials.utils.PathUtil;
-import org.itheima.edu.tutorials.utils.RedisUtil;
-import org.itheima.edu.tutorials.utils.StreamUtils;
-import org.itheima.edu.tutorials.utils.cmd.Commander;
-import org.itheima.edu.tutorials.web.ResponseCode;
-import org.itheima.edu.tutorials.web.ResponseUtils;
-import org.itheima.edu.tutorials.web.service.RunService;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletException;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -38,7 +21,7 @@ import java.util.TimerTask;
  * Created by Poplar on 2017/6/16.
  */
 @Service
-public class RunServiceDockerImpl implements RunService{
+public class RunServiceDockerImpl extends BaseRunServiceImpl{
 
     @Value("${config.dir.root}")
     String rootPath;
@@ -80,9 +63,12 @@ public class RunServiceDockerImpl implements RunService{
         System.out.println("I'm  destory method  using  @PreDestroy.....");
     }
 
-    public boolean runDocker(String[] command, String reportPath) {
+    @Override
+    boolean runTest(String command, String reportPath) {
         String id = null;
+
         try {
+            String[] commands = StringUtils.split(command, " ");
 
             final HostConfig hostConfig = HostConfig.builder()
                     .appendBinds(HostConfig.Bind.from(rootPath).to(rootPath).readOnly(true).build())
@@ -103,14 +89,14 @@ public class RunServiceDockerImpl implements RunService{
             // Start container
             docker.startContainer(id);
 
-            final ExecCreation execCreation = docker.execCreate(id, command,
+            final ExecCreation execCreation = docker.execCreate(id, commands,
                     DockerClient.ExecCreateParam.attachStdout(), DockerClient.ExecCreateParam.attachStderr());
             final LogStream output = docker.execStart(execCreation.id());
             System.out.println("ready go ");
             closeContainerDelay(id);
 
             final String execOutput = output.readFully();
-            System.out.println("execOutput: " + execOutput);
+            System.out.println("==> execOutput: " + execOutput);
 
             return true;
         } catch (Exception e) {
@@ -151,127 +137,4 @@ public class RunServiceDockerImpl implements RunService{
         }, 15 * 1000);
     }
 
-
-
-    Logger logger = LoggerFactory.getLogger(RunServiceDockerImpl.class);
-    @Autowired
-    RedisUtil redisUtil;
-
-
-    @Override
-    public String run(String type, String username, String chapter, String questionid, String code) throws IOException {
-        return run(type, username, chapter, questionid, code, System.currentTimeMillis());
-    }
-
-
-    public String run(String type, String username, String chapter, String questionid, String code, long currentTime) throws IOException {
-
-        // /root/newstrap/result/aaa/Array-1/lucky13/865757798789/src
-        // /root/newstrap/result/aaa/Array-1/lucky13/865757798789/bin
-        // /root/newstrap/result/aaa/Array-1/lucky13/865757798789/report
-        PathUtil.RunDir runDir = PathUtil.newRunDir(username, chapter, questionid, currentTime);
-
-        File srcDir = runDir.getChildDir("src");
-        File binDir = runDir.getChildDir("bin");
-        File reportDir = runDir.getChildDir("report");
-        File questionDir = PathUtil.questionDir(chapter, questionid);
-//        String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);
-        String cacheKey = String.format("%s_%s_%s_%s", type, username, chapter, questionid);
-        logger.info("cacheKey: " + cacheKey + " reportDir: " + reportDir.getAbsolutePath());
-
-        // 1. 写出src到文件
-        File ItheimaJava = writeSrc(code, srcDir);
-
-        // 2. 生成class到bin目录
-        Object[] result = compileSrc(ItheimaJava, binDir);
-
-        String[] command = Commander.java("TestMain")
-                .args(new String[]{reportDir.getAbsolutePath()})   // 报表输出路径
-                .classpath(questionDir.getAbsolutePath())          // 题库根目录
-                .classpath(binDir.getAbsolutePath())               // 编译结果目录
-                .extDir(questionDir.getAbsolutePath() + File.separator + "libs")   // 依赖库目录
-                .separator(":")
-                .createArr();
-
-        String finalCommand = StringUtils.join(command, " ");
-        logger.info("finalCommand: " + finalCommand);
-
-        // 3. 测试class, 把结果放到report目录  E:\cms\newstrap\result\vvv\minCat\1496717064235\report\test.html
-        boolean isSuccess;
-        if ((Integer)result[0] == 200) {
-            isSuccess = runDocker(command, reportDir.getAbsolutePath());
-//            isSuccess = runTest(command);
-        } else {
-            isSuccess = false;
-        }
-
-
-        // 4. 得到测试结果, 返回并将成功信息写入缓存
-        String responseStr = null;
-        if (isSuccess) {
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("username", username);
-            map.put("chapter", chapter);
-            map.put("questionid", questionid);
-            map.put("currentTime", currentTime);
-
-            responseStr = JsonUtils.toWrapperJson(map);
-
-            redisUtil.setCacheObject(cacheKey, ResponseUtils.success(0, reportDir.getAbsolutePath()));
-            redisUtil.publish(cacheKey, ResponseUtils.success(0, reportDir.getAbsolutePath()));
-        } else {
-            responseStr = JsonUtils.toWrapperJson(ResponseCode.ExamError.RUN_EXEC_FAILD, result[1]);
-            redisUtil.setCacheObject(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, (String) result[1]));
-            redisUtil.publish(cacheKey, ResponseUtils.error(ResponseCode.ExamError.RUN_EXEC_FAILD, (String) result[1]));
-        }
-        System.out.println("写出完毕->" + cacheKey);
-
-        return responseStr;
-    }
-
-    private boolean runTest(String command) throws IOException {
-        System.out.println(command);
-        Process p = Runtime.getRuntime().exec(command);
-        try {
-            String parseCmdStream = StreamUtils.parseCmdStream(p.getInputStream());
-//            System.out.println(parseCmdStream);
-            p.waitFor();
-            return true;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    @NotNull
-    private Object[] compileSrc(File itheimaJava, File binDir) {
-        return JCompilerUtils.doMagic(binDir.getAbsolutePath(), new String[]{itheimaJava.getAbsolutePath()});
-    }
-
-    @NotNull
-    private File writeSrc(String code, File srcDir) throws IOException {
-        File ItheimaJava = new File(srcDir, "Itheima.java");
-        FileOutputStream fos = new FileOutputStream(ItheimaJava);
-        fos.write(code.getBytes("utf-8"));
-        StreamUtils.closeIO(fos);
-        return ItheimaJava;
-    }
-
-//    @Override
-//    public String asyncRun(String username, String chapter, String questionid, String code) throws IOException {
-//        // 生成时间
-//        long currentTime = System.currentTimeMillis();
-//        // 异步执行
-//        async(username, chapter, questionid, code, currentTime);
-//
-//        // 返回缓存key (SHA1数字摘要)
-//        String cacheKey = EncryptUtils.SHA1(username + "_" + chapter + "_" + questionid + "_" + currentTime);
-//        System.out.println("asyncRun -> cacheKey: " + cacheKey);
-//        return ResponseUtils.success(cacheKey);
-//    }
-
-    @Override
-    public void async(String type, String username, String chapter, String questionid, String code, long currentTime) throws IOException {
-        run(type, username, chapter, questionid, code, currentTime);
-    }
 }

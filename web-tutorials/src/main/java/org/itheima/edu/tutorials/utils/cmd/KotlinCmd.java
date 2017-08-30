@@ -16,7 +16,7 @@ public class KotlinCmd {
     private Set<String> extDirs = new HashSet<>();
     private Set<String> classpath = new HashSet<>();
     private String encoding = "UTF-8";
-    private String separator = ";";     // 参数分隔符, win为; linux为:
+    private String separator = ":";     // 参数分隔符, win为; linux为:
 
     public KotlinCmd(String main) {
         this.classMain = main;

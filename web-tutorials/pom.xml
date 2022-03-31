@@ -14,7 +14,7 @@
 
 
     <properties>
-        <spring.version>4.2.9.RELEASE</spring.version>
+        <spring.version>5.3.18</spring.version>
         <hibernate.version>5.0.12.Final</hibernate.version>
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <gson.version>2.7</gson.version>
